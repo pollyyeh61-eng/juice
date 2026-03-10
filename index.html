@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>活力美髮｜芭樂汁團購</title>
+    <title>芭樂汁團購</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#22c55e">
     <link rel="apple-touch-icon" href="1.png">
@@ -12,9 +13,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
-        /* 電腦版 RWD 調整 */
+        /* 電腦版雙欄佈局 */
         @media (min-width: 768px) {
             #menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
         }
@@ -25,30 +26,36 @@
     <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-black text-green-600 italic">芭樂汁團購 🍹</h1>
+                <h1 class="text-2xl font-black text-green-600 italic tracking-tighter">GUAVA HUB 🍹</h1>
                 <div class="mt-2 bg-green-50 px-3 py-1 rounded-full border border-green-100 inline-flex items-center gap-2">
                     <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
-                    <p class="text-xs text-green-800 font-bold">自由黃昏市場 排 號</p> 
+                    <p class="text-xs text-green-800 font-bold">自由黃昏市場 排 號/日期/時間</p> 
                 </div>
             </div>
-            <button id="install-btn" class="hidden md:block bg-stone-100 text-stone-600 px-4 py-2 rounded-xl text-sm font-bold">下載安裝 App</button>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto p-4 pb-32">
+    <main class="max-w-4xl mx-auto p-4 pb-40">
         <div id="menu" class="space-y-4 md:space-y-0">
             </div>
     </main>
 
     <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-all duration-500 border border-white/10">
         <div class="pl-2">
-            <p id="item-count" class="text-xs opacity-50 font-bold tracking-widest">0 ITEMS SELECTED</p>
+            <p id="item-count" class="text-[10px] opacity-50 font-bold tracking-widest uppercase">已選擇商品</p>
             <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
         <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg active:scale-95 transition-transform shadow-lg shadow-green-500/20">
             結帳去
         </button>
     </div>
+
+    <button onclick="checkAdmin()" class="fixed bottom-32 right-6 w-14 h-14 bg-white border-2 border-green-500 rounded-full shadow-xl flex items-center justify-center z-40 active:scale-90 transition-all">
+        <div class="text-center">
+            <p class="text-[10px] font-bold text-green-600 leading-none">管理</p>
+            <span class="text-lg">⚙️</span>
+        </div>
+    </button>
 
     <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
     <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 border-t border-stone-100 max-w-2xl mx-auto">
@@ -69,19 +76,24 @@
         // PWA Service Worker 註冊
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(reg => console.log('SW 註冊成功'), err => console.log('SW 註冊失敗', err));
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW 註冊失敗', err));
             });
         }
 
+        // Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
+            authDomain: "studio-2370518507-ee5e3.firebaseapp.com",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
             projectId: "studio-2370518507-ee5e3",
+            storageBucket: "studio-2370518507-ee5e3.firebasestorage.app",
+            messagingSenderId: "960169055224",
             appId: "1:960169055224:web:7db7942ca9876fbdbf3c0d"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // 商品資料
         const products = [
             { id: 'big', name: '經典芭樂汁 (大瓶)', price: 70, img: '1.png' },
             { id: 'small', name: '經典芭樂汁 (小瓶)', price: 60, img: '2.png' }
@@ -89,25 +101,35 @@
 
         let cart = {};
 
+        // 密碼驗證功能
+        function checkAdmin() {
+            const pw = prompt("請輸入管理密碼：");
+            if (pw === "0000") {
+                sessionStorage.setItem("adminAuth", "true");
+                window.location.href = "admin.html";
+            } else if (pw !== null) {
+                alert("密碼錯誤！");
+            }
+        }
+
+        // 渲染畫面
         function render() {
             const menu = document.getElementById('menu');
             menu.innerHTML = '';
             products.forEach(p => {
                 menu.innerHTML += `
-                    <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100 hover:shadow-md transition-shadow group">
+                    <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100 hover:shadow-md transition-all">
                         <div class="flex items-center gap-4">
-                            <div class="relative overflow-hidden rounded-[2rem]">
-                                <img src="${p.img}" class="w-20 h-20 object-cover transform group-hover:scale-110 transition-transform duration-500" alt="${p.name}">
-                            </div>
+                            <img src="${p.img}" class="w-20 h-20 rounded-[2rem] object-cover shadow-sm" alt="${p.name}">
                             <div>
                                 <h3 class="font-bold text-stone-800 text-lg">${p.name}</h3>
                                 <p class="text-green-600 font-black text-xl">$${p.price}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-4 bg-stone-50 p-1.5 rounded-full border border-stone-100">
-                            <button onclick="updateCart('${p.id}', -1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300 hover:text-red-400">-</button>
+                            <button onclick="updateCart('${p.id}', -1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300">-</button>
                             <span id="qty-${p.id}" class="font-black w-5 text-center text-lg">0</span>
-                            <button onclick="updateCart('${p.id}', 1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600 hover:scale-110 transition-transform">+</button>
+                            <button onclick="updateCart('${p.id}', 1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600">+</button>
                         </div>
                     </div>`;
             });
@@ -123,10 +145,9 @@
                 total += p.price * cart[pid];
                 count += cart[pid];
             });
-            const bar = document.getElementById('checkout-bar');
             document.getElementById('total-price').innerText = total;
             document.getElementById('item-count').innerText = `${count} ITEMS SELECTED`;
-            bar.style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(160px)';
+            document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(160px)';
         }
 
         function openDrawer() {
@@ -134,11 +155,7 @@
             list.innerHTML = '';
             Object.keys(cart).forEach(id => {
                 const p = products.find(x => x.id === id);
-                list.innerHTML += `
-                    <div class="flex justify-between items-center bg-stone-50 p-4 rounded-2xl">
-                        <span class="font-bold text-stone-700">${p.name} <span class="text-green-500 ml-2">x${cart[id]}</span></span>
-                        <span class="font-black text-stone-800">$${p.price * cart[id]}</span>
-                    </div>`;
+                list.innerHTML += `<div class="flex justify-between items-center bg-stone-50 p-4 rounded-2xl font-bold"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
             });
             document.getElementById('overlay').classList.remove('hidden');
             setTimeout(() => {
@@ -155,10 +172,9 @@
 
         function sendOrder() {
             const name = document.getElementById('user-name').value;
-            if(!name) return alert("請輸入您的姓名唷！");
+            if(!name) return alert("請輸入姓名唷！");
             const btn = document.getElementById('send-btn');
-            btn.innerText = "傳送訂單中...";
-            btn.disabled = true;
+            btn.innerText = "傳送中..."; btn.disabled = true;
             const detail = Object.keys(cart).map(id => {
                 const p = products.find(x => x.id === id);
                 return `${p.name}x${cart[id]}`;
