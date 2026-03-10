@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>芭樂汁團購</title>
+    <title>活力美髮｜芭樂汁團購</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-        .drawer-up { transform: translateY(0); }
+        .drawer-up { transform: translateY(0) !important; }
     </style>
 </head>
 <body class="bg-stone-50">
 
-    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50">
+    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-md mx-auto">
             <h1 class="text-2xl font-black text-green-600">芭樂汁團購 🍹</h1>
             <div class="mt-2 bg-green-50 p-2 rounded-lg border border-green-100 flex items-center gap-2">
                 <span class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
-                <p class="text-sm text-green-800 font-bold">芭樂汁 櫃台</p> 
+                <p class="text-sm text-green-800 font-bold">活力美髮沙龍 櫃台</p> 
             </div>
         </div>
     </nav>
@@ -27,20 +27,27 @@
     <main id="menu" class="p-4 space-y-4 max-w-md mx-auto pb-32">
         </main>
 
-    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-stone-900 text-white p-5 rounded-3xl shadow-2xl flex justify-between items-center z-50 translate-y-32 transition-transform duration-500">
+    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-stone-900 text-white p-5 rounded-3xl shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-transform duration-500">
         <div>
             <p id="item-count" class="text-xs opacity-50">0 份餐點</p>
             <p class="text-2xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
-        <button onclick="openDrawer()" class="bg-green-500 text-black px-8 py-3 rounded-2xl font-black">結帳</button>
+        <button onclick="openDrawer()" class="bg-green-500 text-black px-8 py-3 rounded-2xl font-black active:scale-95 transition-transform">
+            結帳去
+        </button>
     </div>
 
-    <div id="overlay" class="fixed inset-0 bg-black/50 z-[60] hidden" onclick="closeDrawer()"></div>
-    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[2rem] z-[70] translate-y-full transition-transform duration-300">
-        <h2 class="text-2xl font-black mb-4 text-stone-800">確認訂單</h2>
-        <div id="summary-list" class="space-y-2 mb-6 border-b pb-4"></div>
-        <input type="text" id="user-name" placeholder="輸入你的名字" class="w-full bg-stone-100 p-4 rounded-xl mb-4 font-bold outline-none ring-2 ring-stone-200 focus:ring-green-500">
-        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 py-5 rounded-2xl font-black text-lg shadow-lg">發送訂單 🚀</button>
+    <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[2.5rem] z-[70] translate-y-full transition-transform duration-300 border-t border-stone-100">
+        <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-6"></div>
+        <h2 class="text-2xl font-black mb-4 text-stone-800">確認訂單內容</h2>
+        <div id="summary-list" class="space-y-3 mb-6 border-b border-stone-50 pb-6 max-h-[30vh] overflow-y-auto"></div>
+        <div class="space-y-4">
+            <input type="text" id="user-name" placeholder="請輸入您的姓名" class="w-full bg-stone-100 p-4 rounded-2xl font-bold outline-none ring-2 ring-transparent focus:ring-green-500 transition-all">
+            <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-2xl font-black text-xl shadow-xl shadow-green-100 active:scale-95 transition-all">
+                確認下單 🚀
+            </button>
+        </div>
     </div>
 
     <script>
@@ -54,11 +61,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 🎉 核心修改：將 emoji 換成你的 png 圖片檔名
-        // 我假設 1.png 是大瓶，2.png 是小瓶，3.png 是梅子。如果不對，你再調整數字。
+        // 已移除甘梅芭樂汁，僅保留大/小瓶經典芭樂汁
         const products = [
-            { id: 'p1', name: '經典芭樂汁 (大瓶)', price: 70, img: '1.png' }, 
-            { id: 'p2', name: '經典芭樂汁 (小瓶)', price: 60, img: '2.png' },
+            { id: 'big', name: '經典芭樂汁 (大瓶)', price: 70, img: '1.png' },
+            { id: 'small', name: '經典芭樂汁 (小瓶)', price: 60, img: '2.png' }
         ];
 
         let cart = {};
@@ -68,18 +74,18 @@
             menu.innerHTML = '';
             products.forEach(p => {
                 menu.innerHTML += `
-                    <div class="bg-white p-5 rounded-[1.5rem] flex items-center justify-between shadow border border-stone-100 transition-all active:scale-[0.98]">
-                        <div class="flex items-center gap-5">
-                            <img src="${p.img}" class="w-20 h-20 rounded-2xl object-cover shadow-inner border border-stone-100" alt="${p.name}">
+                    <div class="bg-white p-5 rounded-[2rem] flex items-center justify-between shadow-sm border border-stone-100">
+                        <div class="flex items-center gap-4">
+                            <img src="${p.img}" class="w-16 h-16 rounded-2xl object-cover shadow-sm" alt="${p.name}">
                             <div>
-                                <h3 class="font-bold text-stone-800 text-lg leading-snug">${p.name}</h3>
-                                <p class="text-green-600 font-black text-xl">$${p.price}</p>
+                                <h3 class="font-bold text-stone-800 text-lg">${p.name}</h3>
+                                <p class="text-green-600 font-black">$${p.price}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="updateCart('${p.id}', -1)" class="w-9 h-9 rounded-full bg-stone-100 font-bold text-stone-400">-</button>
-                            <span id="qty-${p.id}" class="font-black w-4 text-center text-lg">0</span>
-                            <button onclick="updateCart('${p.id}', 1)" class="w-9 h-9 rounded-full bg-stone-100 font-bold text-green-600">+</button>
+                        <div class="flex items-center gap-4 bg-stone-50 p-1 rounded-full">
+                            <button onclick="updateCart('${p.id}', -1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-400">-</button>
+                            <span id="qty-${p.id}" class="font-black w-4 text-center">0</span>
+                            <button onclick="updateCart('${p.id}', 1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600">+</button>
                         </div>
                     </div>`;
             });
@@ -88,19 +94,17 @@
         function updateCart(id, change) {
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
-            
             document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
-
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
                 const p = products.find(x => x.id === pid);
                 total += p.price * cart[pid];
                 count += cart[pid];
             });
-
+            const bar = document.getElementById('checkout-bar');
             document.getElementById('total-price').innerText = total;
             document.getElementById('item-count').innerText = `${count} 份餐點`;
-            document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(120px)';
+            bar.style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(160px)';
         }
 
         function openDrawer() {
@@ -108,20 +112,24 @@
             list.innerHTML = '';
             Object.keys(cart).forEach(id => {
                 const p = products.find(x => x.id === id);
-                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
+                list.innerHTML += `<div class="flex justify-between font-bold text-stone-600"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
             });
             document.getElementById('overlay').classList.remove('hidden');
-            document.getElementById('drawer').style.transform = 'translateY(0)';
+            setTimeout(() => {
+                document.getElementById('overlay').style.opacity = '1';
+                document.getElementById('drawer').classList.add('drawer-up');
+            }, 10);
         }
 
         function closeDrawer() {
-            document.getElementById('overlay').classList.add('hidden');
-            document.getElementById('drawer').style.transform = 'translateY(100%)';
+            document.getElementById('overlay').style.opacity = '0';
+            document.getElementById('drawer').classList.remove('drawer-up');
+            setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
         }
 
         function sendOrder() {
             const name = document.getElementById('user-name').value;
-            if(!name) return alert("請輸入你的名字唷！");
+            if(!name) return alert("請輸入您的姓名唷！");
             const btn = document.getElementById('send-btn');
             btn.innerText = "傳送中...";
             btn.disabled = true;
@@ -130,18 +138,13 @@
                 return `${p.name}x${cart[id]}`;
             }).join(', ');
             db.ref('orders').push({
-                customer: name,
-                items: detail,
-                total: document.getElementById('total-price').innerText,
-                time: Date.now()
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
             }).then(() => {
-                alert("🎉 下單成功！請至櫃台領取。");
+                alert("🎉 下單成功！");
                 location.reload();
             });
         }
-
         render();
     </script>
 </body>
 </html>
-
