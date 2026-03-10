@@ -8,118 +8,82 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { 
-            -webkit-tap-highlight-color: transparent; 
-            user-select: none;
-            overscroll-behavior-y: contain;
-        }
-        .order-drawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .ios-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+        .drawer-up { transform: translateY(0); }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-800">
+<body class="bg-stone-50">
 
-    <nav class="sticky top-0 bg-white/80 ios-blur z-40 p-4 border-b border-stone-200">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-black text-green-600 italic">GUAVA HUB</h1>
-                <p class="text-[10px] text-stone-400 font-bold tracking-widest uppercase">活力美髮專屬團購</p>
-            </div>
-            <div id="cart-dot" class="w-2 h-2 bg-red-500 rounded-full animate-ping hidden"></div>
-        </div>
+    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50">
+        <h1 class="text-xl font-black text-green-600">GUAVA HUB</h1>
+        <p class="text-[10px] text-stone-400">活力美髮專屬團購</p>
     </nav>
 
-    <main class="max-w-md mx-auto p-4 space-y-4" id="menu">
-        </main>
+    <main id="menu" class="p-4 space-y-4 max-w-md mx-auto">
+        <p class="text-center py-20 text-stone-300 italic">正在喚醒芭樂汁...</p>
+    </main>
 
-    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-stone-900 text-white p-5 rounded-3xl shadow-2xl flex justify-between items-center z-50 translate-y-32 transition-transform duration-500">
+    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-stone-900 text-white p-5 rounded-3xl shadow-2xl flex justify-between items-center z-50 translate-y-32 transition-transform duration-500">
         <div>
-            <p id="item-count" class="text-xs text-stone-400 font-medium">0 份餐點</p>
+            <p id="item-count" class="text-xs opacity-50">0 份餐點</p>
             <p class="text-2xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
-        <button onclick="openDrawer()" class="bg-green-500 text-stone-900 px-8 py-3 rounded-2xl font-black active:scale-95 transition-transform">
-            結帳
-        </button>
+        <button onclick="openDrawer()" class="bg-green-500 text-black px-8 py-3 rounded-2xl font-black">結帳</button>
     </div>
 
-    <div id="drawer-overlay" class="fixed inset-0 bg-black/40 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
-    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white z-[70] rounded-t-[2.5rem] p-8 translate-y-full order-drawer">
-        <div class="w-12 h-1 bg-stone-200 rounded-full mx-auto mb-8"></div>
-        <h2 class="text-2xl font-black mb-6 text-stone-800">訂單內容</h2>
-        
-        <div id="summary-list" class="space-y-4 mb-8 max-h-[30vh] overflow-y-auto">
-            </div>
-
-        <div class="space-y-4">
-            <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-4 rounded-2xl border-none outline-none focus:ring-2 focus:ring-green-500 font-bold">
-            <button onclick="sendToFirebase()" id="confirm-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-2xl font-black text-lg shadow-xl shadow-green-200 active:scale-95 transition-all">
-                確認訂購 🚀
-            </button>
-        </div>
+    <div id="overlay" class="fixed inset-0 bg-black/50 z-[60] hidden" onclick="closeDrawer()"></div>
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[2rem] z-[70] translate-y-full transition-transform duration-300">
+        <h2 class="text-2xl font-black mb-4">確認訂單</h2>
+        <div id="summary-list" class="space-y-2 mb-6 border-b pb-4"></div>
+        <input type="text" id="user-name" placeholder="輸入你的名字" class="w-full bg-stone-100 p-4 rounded-xl mb-4 font-bold outline-none ring-2 ring-stone-200 focus:ring-green-500">
+        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 py-5 rounded-2xl font-black text-lg shadow-lg">發送訂單 🚀</button>
     </div>
 
     <script>
-        // --- 1. Firebase 配置 (已修正變數結構) ---
+        // --- 設定你截圖中的新 Firebase ---
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
-            authDomain: "holyhairsalon-f73bf.firebaseapp.com",
-            databaseURL: "https://holyhairsalon-f73bf-default-rtdb.firebaseio.com",
-            projectId: "holyhairsalon-f73bf",
-            storageBucket: "holyhairsalon-f73bf.firebasestorage.app",
-            messagingSenderId: "960169055224",
-            appId: "1:960169055224:web:7db7942ca9876fbdbf3c0d",
-            measurementId: "G-MGGWEHLQ1D"
+            databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
+            projectId: "studio-2370518507-ee5e3",
+            appId: "1:960169055224:web:7db7942ca9876fbdbf3c0d"
         };
 
-        // 初始化 Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 2. 商品設定 ---
         const products = [
-            { id: 'juice_1', name: '經典芭樂汁', price: 50, color: 'bg-green-100', emoji: '🍹' },
-            { id: 'juice_2', name: '甘梅芭樂汁', price: 55, color: 'bg-red-50', emoji: '🧂' },
-            { id: 'juice_3', name: '芭樂檸檬派對', price: 65, color: 'bg-yellow-50', emoji: '🍋' }
+            { id: 'p1', name: '經典芭樂汁', price: 50, emoji: '🍹' },
+            { id: 'p2', name: '甘梅芭樂汁', price: 55, emoji: '🧂' },
+            { id: 'p3', name: '芭樂檸檬', price: 65, emoji: '🍋' }
         ];
 
         let cart = {};
 
-        // --- 3. 渲染網頁 ---
         function render() {
             const menu = document.getElementById('menu');
-            menu.innerHTML = ''; // 清空預防重複渲染
+            menu.innerHTML = '';
             products.forEach(p => {
                 menu.innerHTML += `
-                    <div class="bg-white border border-stone-100 p-4 rounded-[2rem] flex items-center justify-between shadow-sm">
+                    <div class="bg-white p-5 rounded-3xl flex items-center justify-between shadow-sm border border-stone-100">
                         <div class="flex items-center gap-4">
-                            <div class="${p.color} w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl shadow-inner">${p.emoji}</div>
-                            <div>
-                                <h3 class="font-bold text-lg">${p.name}</h3>
-                                <p class="text-green-600 font-black">$${p.price}</p>
-                            </div>
+                            <span class="text-3xl">${p.emoji}</span>
+                            <div><h3 class="font-bold">${p.name}</h3><p class="text-green-600 font-bold">$${p.price}</p></div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <button onclick="updateCart('${p.id}', -1)" class="w-10 h-10 rounded-full border border-stone-100 flex items-center justify-center font-bold text-stone-400 active:bg-stone-100">-</button>
-                            <span id="q-${p.id}" class="w-4 text-center font-black">0</span>
-                            <button onclick="updateCart('${p.id}', 1)" class="w-10 h-10 rounded-full border border-stone-100 flex items-center justify-center font-bold text-green-600 active:bg-green-50">+</button>
+                            <button onclick="updateCart('${p.id}', -1)" class="w-8 h-8 rounded-full bg-stone-100 font-bold">-</button>
+                            <span id="qty-${p.id}" class="font-black w-4 text-center">0</span>
+                            <button onclick="updateCart('${p.id}', 1)" class="w-8 h-8 rounded-full bg-stone-100 font-bold text-green-600">+</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
-        // --- 4. 購物車核心邏輯 ---
         function updateCart(id, change) {
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
+            
+            document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
 
-            // 更新數字顯示
-            products.forEach(p => {
-                const element = document.getElementById(`q-${p.id}`);
-                if (element) element.innerText = cart[p.id] || 0;
-            });
-
-            // 計算總數與金額
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
                 const p = products.find(x => x.id === pid);
@@ -127,77 +91,52 @@
                 count += cart[pid];
             });
 
-            // 顯示底部結帳條
-            const bar = document.getElementById('checkout-bar');
             document.getElementById('total-price').innerText = total;
             document.getElementById('item-count').innerText = `${count} 份餐點`;
-            bar.style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(120px)';
+            document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(120px)';
         }
 
-        // --- 5. 抽屜控制 ---
         function openDrawer() {
             const list = document.getElementById('summary-list');
             list.innerHTML = '';
             Object.keys(cart).forEach(id => {
                 const p = products.find(x => x.id === id);
-                list.innerHTML += `
-                    <div class="flex justify-between items-center font-bold">
-                        <span class="text-stone-500">${p.name} <span class="text-stone-300">x${cart[id]}</span></span>
-                        <span>$${p.price * cart[id]}</span>
-                    </div>`;
+                list.innerHTML += `<div class="flex justify-between font-bold"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
             });
-            document.getElementById('drawer-overlay').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('drawer-overlay').style.opacity = '1';
-                document.getElementById('drawer').style.transform = 'translateY(0)';
-            }, 10);
+            document.getElementById('overlay').classList.remove('hidden');
+            document.getElementById('drawer').classList.add('drawer-up');
         }
 
         function closeDrawer() {
-            document.getElementById('drawer-overlay').style.opacity = '0';
-            document.getElementById('drawer').style.transform = 'translateY(110%)';
-            setTimeout(() => document.getElementById('drawer-overlay').classList.add('hidden'), 300);
+            document.getElementById('overlay').classList.add('hidden');
+            document.getElementById('drawer').classList.remove('drawer-up');
         }
 
-        // --- 6. 最終提交 (Firebase + 簡訊) ---
-        function sendToFirebase() {
+        function sendOrder() {
             const name = document.getElementById('user-name').value;
-            const adminPhone = "09XXXXXXXX"; // <--- 記得在此填入收件手機
+            if(!name) return alert("請輸入你的名字唷！");
             
-            if(!name) return alert("大師，請輸入姓名喔！");
-
-            const btn = document.getElementById('confirm-btn');
+            const btn = document.getElementById('send-btn');
+            btn.innerText = "傳送中...";
             btn.disabled = true;
-            btn.innerText = "訂單雲端同步中...";
 
-            const detailStr = Object.keys(cart).map(id => {
+            const detail = Object.keys(cart).map(id => {
                 const p = products.find(x => x.id === id);
                 return `${p.name}x${cart[id]}`;
             }).join(', ');
 
-            const total = document.getElementById('total-price').innerText;
-
-            // 寫入 Firebase
             db.ref('orders').push({
                 customer: name,
-                items: detailStr,
-                total: total,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+                items: detail,
+                total: document.getElementById('total-price').innerText,
+                time: Date.now()
             }).then(() => {
-                // 喚起手機簡訊
-                const smsText = `【活力美髮訂單】\n訂購人：${name}\n明細：${detailStr}\n總額：$${total}`;
-                window.location.href = `sms:${adminPhone}?body=${encodeURIComponent(smsText)}`;
-                
-                // 延遲刷新頁面
-                setTimeout(() => location.reload(), 2000);
-            }).catch(err => {
-                alert("傳送失敗，請檢查網路：" + err.message);
-                btn.disabled = false;
-                btn.innerText = "確認訂購 🚀";
+                // 發送完後自動重整
+                alert("下單成功！");
+                location.reload();
             });
         }
 
-        // 啟動渲染
         render();
     </script>
 </body>
