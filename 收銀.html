@@ -60,11 +60,11 @@
     </main>
 
     <script>
-        // 安全檢查
-        if (sessionStorage.getItem("adminAuth") !== "true") {
+        // 驗證機制與 index.html / 管理.html 保持一致
+        if (sessionStorage.getItem('admin') !== 'ok') {
             const pw = prompt("請輸入管理密碼以查看收銀資料：");
             if (pw === "0000") {
-                sessionStorage.setItem("adminAuth", "true");
+                sessionStorage.setItem("admin", "ok");
             } else {
                 alert("權限不足");
                 window.location.href = "index.html";
@@ -81,7 +81,7 @@
         const db = firebase.database();
 
         function loadFinances() {
-            // ✨ 關鍵修正：監聽 'history' 而不是 'orders'
+            // 監聽歷史資料庫
             db.ref('history').on('value', snapshot => {
                 const data = snapshot.val();
                 const rows = document.getElementById('order-rows');
@@ -95,8 +95,8 @@
                     return;
                 }
 
-                // 轉為陣列並按時間排序（最新的在前）
-                const records = Object.values(data).sort((a, b) => b.time - a.time);
+                // 將歷史紀錄按 timestamp 倒序排列（最新的在最上面）
+                const records = Object.values(data).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                 
                 let dayTotal = 0;
                 let weekTotal = 0;
@@ -105,7 +105,7 @@
                 const now = new Date();
                 const todayStr = now.toDateString();
                 
-                // 計算本週一的開始時間
+                // 本週起始計算
                 const tempDate = new Date();
                 const dayOfWeek = tempDate.getDay(); 
                 const diff = tempDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -115,23 +115,21 @@
                 rows.innerHTML = '';
 
                 records.forEach(record => {
-                    const recordDate = new Date(record.time);
+                    // 關鍵：讀取 record.timestamp
+                    const recordTime = record.timestamp || 0;
+                    const recordDate = new Date(recordTime);
                     const amount = parseInt(record.total) || 0;
 
-                    // 1. 全部收入
                     allTotal += amount;
 
-                    // 2. 今日收入
                     if (recordDate.toDateString() === todayStr) {
                         dayTotal += amount;
                     }
 
-                    // 3. 本週收入
                     if (recordDate >= startOfWeek) {
                         weekTotal += amount;
                     }
 
-                    // 渲染表格
                     rows.innerHTML += `
                         <tr class="hover:bg-stone-50 transition-colors">
                             <td class="p-4 text-stone-500 text-xs">${recordDate.toLocaleString()}</td>
@@ -142,7 +140,6 @@
                     `;
                 });
 
-                // 更新顯示數值
                 document.getElementById('day-total').innerText = dayTotal.toLocaleString();
                 document.getElementById('week-total').innerText = weekTotal.toLocaleString();
                 document.getElementById('all-total').innerText = allTotal.toLocaleString();
