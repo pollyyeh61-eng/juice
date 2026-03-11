@@ -24,15 +24,15 @@
 <body class="bg-stone-50 min-h-screen">
 
     <div class="fixed top-4 right-4 flex gap-2 z-[60]">
-        <button onclick="checkAuth('收銀.html')" class="w-12 h-12 bg-stone-800 text-white rounded-2xl shadow-lg flex items-center justify-center btn-active border border-stone-700">
+        <button onclick="checkAuth('收銀.html')" class="w-12 h-12 bg-orange-100 text-orange-700 rounded-2xl shadow-lg flex items-center justify-center btn-active border-2 border-orange-200">
             <div class="text-center">
                 <p class="text-[8px] font-bold leading-none">收銀</p>
                 <span class="text-base">💰</span>
             </div>
         </button>
-        <button onclick="checkAuth('後台.html')" class="w-12 h-12 bg-white border-2 border-green-500 rounded-2xl shadow-lg flex items-center justify-center btn-active">
+        <button onclick="checkAuth('後台.html')" class="w-12 h-12 bg-green-100 text-green-700 rounded-2xl shadow-lg flex items-center justify-center btn-active border-2 border-green-200">
             <div class="text-center">
-                <p class="text-[8px] font-bold text-green-600 leading-none">管理</p>
+                <p class="text-[8px] font-bold leading-none">管理</p>
                 <span class="text-base">⚙️</span>
             </div>
         </button>
@@ -44,7 +44,7 @@
                 <h1 class="text-2xl font-black text-green-600 italic tracking-tighter">GUAVA HUB 🍹</h1>
                 <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 inline-flex items-center gap-2">
                     <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
-                    <p class="text-xs text-green-800 font-bold">自由黃昏市場 排 號</p> 
+                    <p id="nav-location" class="text-xs text-green-800 font-bold">載入中...</p> 
                 </div>
             </div>
         </div>
@@ -61,10 +61,6 @@
                     <p class="text-sm text-stone-600 leading-relaxed font-medium">
                         本芭樂汁採用<span class="text-green-600 font-bold">慢磨機</span>，將果渣與果汁分離，保留最高營養。堅持<span class="font-bold">無糖、無水</span>。
                     </p>
-                    <div class="bg-stone-100 p-4 rounded-2xl text-[13px] space-y-1.5 text-stone-700">
-                        <p>🥛 若覺太甜：飲用前可加適量水調整</p>
-                        <p>✨ 進階吃法：加入甘梅粉更具風味喔！</p>
-                    </div>
                 </div>
             </div>
         </section>
@@ -81,13 +77,13 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100">
+                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
                         <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取時間</p>
-                        <p class="text-sm font-black text-stone-800">15:00 - 19:00</p>
+                        <p id="foot-time" class="text-sm font-black text-stone-800">載入中...</p>
                     </div>
-                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100">
+                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
                         <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取地點</p>
-                        <p class="text-sm font-black text-stone-800">自由黃昏市場 排 號</p>
+                        <p id="foot-location" class="text-sm font-black text-stone-800">載入中...</p>
                     </div>
                 </div>
             </div>
@@ -112,6 +108,12 @@
     </div>
 
     <script>
+        // 📍 【全站連動設定區】改這裡就好！
+        const pickupConfig = {
+            location: "自由黃昏市場 排 號", 
+            time: "15:00 - 19:00"          
+        };
+
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
@@ -129,6 +131,12 @@
         ];
 
         let cart = {};
+
+        function initPickupInfo() {
+            document.getElementById('nav-location').innerText = pickupConfig.location;
+            document.getElementById('foot-time').innerText = pickupConfig.time;
+            document.getElementById('foot-location').innerText = pickupConfig.location;
+        }
 
         function render() {
             const menu = document.getElementById('menu');
@@ -215,10 +223,12 @@
             db.ref('orders').push({
                 customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
             }).then(() => { 
-                alert("🎉 預約成功！\n取貨地點：自由黃昏市場 排 號\n取貨時間：15:00 - 19:00"); 
+                alert(`🎉 預約成功！\n取貨地點：${pickupConfig.location}\n取貨時間：${pickupConfig.time}`); 
                 location.reload(); 
             });
         }
+
+        initPickupInfo();
         render();
     </script>
 </body>
