@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>芭樂汁團購｜GUAVA HUB</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#22c55e">
-    <link rel="apple-touch-icon" href="1.png">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -25,16 +20,10 @@
 
     <div class="fixed top-4 right-4 flex gap-2 z-[60]">
         <button onclick="checkAuth('收銀.html')" class="w-12 h-12 bg-orange-100 text-orange-700 rounded-2xl shadow-lg flex items-center justify-center btn-active border-2 border-orange-200">
-            <div class="text-center">
-                <p class="text-[8px] font-bold leading-none">收銀</p>
-                <span class="text-base">💰</span>
-            </div>
+            <div class="text-center"><p class="text-[8px] font-bold leading-none">收銀</p><span class="text-base">💰</span></div>
         </button>
         <button onclick="checkAuth('後台.html')" class="w-12 h-12 bg-green-100 text-green-700 rounded-2xl shadow-lg flex items-center justify-center btn-active border-2 border-green-200">
-            <div class="text-center">
-                <p class="text-[8px] font-bold leading-none">管理</p>
-                <span class="text-base">⚙️</span>
-            </div>
+            <div class="text-center"><p class="text-[8px] font-bold leading-none">管理</p><span class="text-base">⚙️</span></div>
         </button>
     </div>
 
@@ -44,7 +33,7 @@
                 <h1 class="text-2xl font-black text-green-600 italic tracking-tighter">GUAVA HUB 🍹</h1>
                 <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 inline-flex items-center gap-2">
                     <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
-                    <p id="nav-location" class="text-xs text-green-800 font-bold">載入中...</p> 
+                    <p id="nav-location" class="text-xs text-green-800 font-bold italic text-slate-400">讀取中...</p> 
                 </div>
             </div>
         </div>
@@ -53,13 +42,13 @@
     <main class="max-w-4xl mx-auto p-4">
         <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
             <div class="flex flex-col md:flex-row items-center gap-6">
-                <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
-                <div class="flex-1 space-y-3">
-                    <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
+                <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm">
+                <div class="flex-1 space-y-3 text-center md:text-left">
+                    <h2 class="text-lg font-black text-stone-800 flex items-center justify-center md:justify-start gap-2">
                         <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
                     </h2>
                     <p class="text-sm text-stone-600 leading-relaxed font-medium">
-                        本芭樂汁採用<span class="text-green-600 font-bold">慢磨機</span>，將果渣與果汁分離，保留最高營養。堅持<span class="font-bold">無糖、無水</span>。
+                        慢磨機果渣分離，保留最高營養。堅持<span class="text-green-600 font-bold">無糖、無水</span>。
                     </p>
                 </div>
             </div>
@@ -72,19 +61,13 @@
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">📍</div>
                     <div>
-                        <h3 class="font-black text-stone-800 text-sm uppercase tracking-wider">已完成預約取貨資訊</h3>
-                        <p class="text-[11px] text-stone-400 font-bold">下單後請於指定時間前往領取</p>
+                        <h3 class="font-black text-stone-800 text-sm uppercase">已完成預約取貨資訊</h3>
+                        <p class="text-[11px] text-stone-400 font-bold underline underline-offset-4 decoration-green-300">請依下方後台即時地點前往</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
-                        <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取時間</p>
-                        <p id="foot-time" class="text-sm font-black text-stone-800">載入中...</p>
-                    </div>
-                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
-                        <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取地點</p>
-                        <p id="foot-location" class="text-sm font-black text-stone-800">載入中...</p>
-                    </div>
+                <div class="bg-stone-50 p-5 rounded-2xl border border-stone-100">
+                    <p class="text-[10px] font-bold text-stone-400 mb-2 uppercase text-center">目前取貨位置與時間</p>
+                    <p id="foot-location-full" class="text-md font-black text-stone-800 text-center italic">讀取中...</p>
                 </div>
             </div>
         </footer>
@@ -92,7 +75,7 @@
 
     <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-all duration-500 border border-white/10">
         <div class="pl-2">
-            <p id="item-count" class="text-[10px] opacity-50 font-bold tracking-widest uppercase">已選擇商品</p>
+            <p id="item-count" class="text-[10px] opacity-50 font-bold uppercase">已選擇商品</p>
             <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
         <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">結帳去</button>
@@ -103,17 +86,12 @@
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
         <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
         <div id="summary-list" class="space-y-4 mb-8"></div>
-        <input type="text" id="user-name" placeholder="請輸入姓名 (取貨用)" class="w-full bg-stone-100 p-5 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-green-500 mb-4 text-lg">
-        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">送出預約 🚀</button>
+        <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-5 rounded-2xl font-bold outline-none mb-4 text-lg">
+        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl btn-active">送出預約 🚀</button>
     </div>
 
     <script>
-        // 📍 【全站連動設定區】改這裡就好！
-        const pickupConfig = {
-            location: "自由黃昏市場 排 號", 
-            time: "15:00 - 19:00"          
-        };
-
+        // --- Firebase 設定 ---
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
@@ -123,6 +101,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let currentLiveLocation = "讀取中...";
+
+        // 🔗 【關鍵連動】監聽後台 config/pickupLocation 的變動
+        db.ref('config/pickupLocation').on('value', snapshot => {
+            currentLiveLocation = snapshot.val() || "請洽詢店家";
+            // 即時更新導覽列
+            document.getElementById('nav-location').innerText = currentLiveLocation;
+            // 即時更新底部欄
+            document.getElementById('foot-location-full').innerText = currentLiveLocation;
+        });
+
+        // --- 產品與購物車邏輯 ---
         const products = [
             { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '5.png', desc: '原味鮮榨' },
             { id: 'big_2', name: '大瓶 (2瓶優惠組)', price: 120, img: '5.png', desc: '超值省 $20' },
@@ -132,33 +122,23 @@
 
         let cart = {};
 
-        function initPickupInfo() {
-            document.getElementById('nav-location').innerText = pickupConfig.location;
-            document.getElementById('foot-time').innerText = pickupConfig.time;
-            document.getElementById('foot-location').innerText = pickupConfig.location;
-        }
-
         function render() {
             const menu = document.getElementById('menu');
-            menu.innerHTML = '';
-            products.forEach(p => {
-                menu.innerHTML += `
-                    <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100">
-                        <div class="flex items-center gap-3">
-                            <img src="${p.img}" class="w-16 h-16 rounded-[1.5rem] object-cover" alt="${p.name}">
-                            <div>
-                                <h3 class="font-bold text-stone-800 text-base leading-tight">${p.name}</h3>
-                                <p class="text-green-600 font-black text-lg">$${p.price}</p>
-                                <p class="text-[10px] text-stone-400 font-bold">${p.desc}</p>
-                            </div>
+            menu.innerHTML = products.map(p => `
+                <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.img}" class="w-16 h-16 rounded-[1.5rem] object-cover">
+                        <div>
+                            <h3 class="font-bold text-stone-800 text-base leading-tight">${p.name}</h3>
+                            <p class="text-green-600 font-black text-lg">$${p.price}</p>
                         </div>
-                        <div class="flex items-center gap-3 bg-stone-50 p-1 rounded-full border border-stone-100">
-                            <button onclick="updateCart('${p.id}', -1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300 btn-active">-</button>
-                            <span id="qty-${p.id}" class="font-black w-4 text-center text-md">0</span>
-                            <button onclick="updateCart('${p.id}', 1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600 btn-active">+</button>
-                        </div>
-                    </div>`;
-            });
+                    </div>
+                    <div class="flex items-center gap-3 bg-stone-50 p-1 rounded-full border border-stone-100">
+                        <button onclick="updateCart('${p.id}', -1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300">-</button>
+                        <span id="qty-${p.id}" class="font-black w-4 text-center">0</span>
+                        <button onclick="updateCart('${p.id}', 1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600">+</button>
+                    </div>
+                </div>`).join('');
         }
 
         function updateCart(id, change) {
@@ -172,25 +152,17 @@
                 count += cart[pid];
             });
             document.getElementById('total-price').innerText = total;
-            document.getElementById('item-count').innerText = `${count} ITEMS`;
             document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(160px)';
         }
 
         function openDrawer() {
             const list = document.getElementById('summary-list');
-            list.innerHTML = '';
-            Object.keys(cart).forEach(id => {
+            list.innerHTML = Object.keys(cart).map(id => {
                 const p = products.find(x => x.id === id);
-                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl">
-                    <span>${p.name} x${cart[id]}</span>
-                    <span>$${p.price * cart[id]}</span>
-                </div>`;
-            });
+                return `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
+            }).join('');
             document.getElementById('overlay').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('overlay').style.opacity = '1';
-                document.getElementById('drawer').classList.add('drawer-up');
-            }, 10);
+            setTimeout(() => { document.getElementById('overlay').style.opacity = '1'; document.getElementById('drawer').classList.add('drawer-up'); }, 10);
         }
 
         function closeDrawer() {
@@ -199,36 +171,26 @@
             setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
         }
 
-        function checkAuth(targetUrl) {
-            if (sessionStorage.getItem("adminAuth") === "true") {
-                window.location.href = targetUrl;
-                return;
-            }
-            const pw = prompt("請輸入管理密碼：");
-            if (pw === "0000") { sessionStorage.setItem("adminAuth", "true"); window.location.href = targetUrl; }
-            else if (pw !== null) alert("密碼錯誤！");
+        function checkAuth(url) {
+            if (sessionStorage.getItem("adminAuth") === "true") { window.location.href = url; return; }
+            const pw = prompt("密碼：");
+            if (pw === "0000") { sessionStorage.setItem("adminAuth", "true"); window.location.href = url; }
         }
 
         function sendOrder() {
             const name = document.getElementById('user-name').value;
-            if(!name) return alert("請輸入姓名！");
-            const btn = document.getElementById('send-btn');
-            btn.innerText = "傳送中..."; btn.disabled = true;
-
-            const detail = Object.keys(cart).map(id => {
-                const p = products.find(x => x.id === id);
-                return `${p.name}x${cart[id]}`;
-            }).join(', ');
-
+            if(!name) return alert("請輸入姓名");
+            const detail = Object.keys(cart).map(id => `${products.find(x => x.id === id).name}x${cart[id]}`).join(', ');
+            
             db.ref('orders').push({
-                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, 
+                time: Date.now(), 
+                pickupAt: currentLiveLocation // 儲存當下的即時地點
             }).then(() => { 
-                alert(`🎉 預約成功！\n取貨地點：${pickupConfig.location}\n取貨時間：${pickupConfig.time}`); 
+                alert(`🎉 預約成功！\n取貨資訊：${currentLiveLocation}`); 
                 location.reload(); 
             });
         }
-
-        initPickupInfo();
         render();
     </script>
 </body>
