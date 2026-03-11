@@ -30,10 +30,11 @@
                 </div>
             </div>
 
-            <div class="flex gap-2">
-                <button id="pwa-install-btn" onclick="triggerPWAInstall()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
-                <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">💰 收銀</button>
-                <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">⚙️ 管理</button>
+            <div class="grid grid-cols-4 gap-2">
+                <button id="pwa-install-btn" onclick="triggerPWAInstall()" class="h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">📲 下載</button>
+                <button onclick="shareApp()" class="h-10 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">🔗 分享</button>
+                <button onclick="checkAuth('收銀.html')" class="h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">💰 收銀</button>
+                <button onclick="checkAuth('後台.html')" class="h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">⚙️ 管理</button>
             </div>
         </div>
     </nav>
@@ -103,7 +104,6 @@
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
         <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
         <div id="summary-list" class="space-y-4 mb-6"></div>
-        
         <div class="space-y-3 mb-8">
             <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-5 rounded-2xl font-bold text-lg outline-none focus:ring-2 focus:ring-green-500">
             <div class="bg-red-50 p-4 rounded-2xl border border-red-100 flex items-center justify-between">
@@ -117,11 +117,11 @@
                 </select>
             </div>
         </div>
-
         <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">送出預約 🚀</button>
     </div>
 
     <script>
+        // PWA 下載邏輯
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -134,6 +134,25 @@
                 deferredPrompt = null;
             } else {
                 alert("點擊分享圖示 ➔ 加入主畫面");
+            }
+        }
+
+        // --- 新增：分享 APP 邏輯 ---
+        async function shareApp() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'GUAVA HUB 芭樂汁團購',
+                        text: '這家的慢磨鮮榨芭樂汁超好喝！純天然無添加，快來一起訂～',
+                        url: window.location.href,
+                    });
+                } catch (err) {
+                    console.log('Share failed:', err);
+                }
+            } else {
+                // 不支援 API 的備選方案（如電腦端）
+                navigator.clipboard.writeText(window.location.href);
+                alert('已將網址複製到剪貼簿，快分享給好友吧！');
             }
         }
 
@@ -155,7 +174,6 @@
 
         let cart = {};
 
-        // --- 本地記憶邏輯 ---
         window.onload = () => {
             const savedOrder = localStorage.getItem('lastOrder');
             if (savedOrder) {
@@ -243,12 +261,9 @@
             db.ref('orders').push({
                 customer: name, items: detail, total: document.getElementById('total-price').innerText, pickup_time: time, status: 'pending', timestamp: Date.now()
             }).then(() => { 
-                // 存入手機記憶體
                 localStorage.setItem('lastOrder', JSON.stringify({ name: name, time: time, location: locStr }));
-                
                 closeDrawer();
                 showSuccessCard(name, time, locStr);
-                
                 cart = {}; render();
                 document.getElementById('total-price').innerText = "0";
                 document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
