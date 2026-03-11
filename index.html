@@ -16,15 +16,13 @@
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         
-        /* ✨ 點擊變色功能 (Active State) */
         .btn-active:active { 
             transform: scale(0.92); 
-            background-color: #f0fdf4 !important; /* 點擊時變為極淺綠 */
+            background-color: #f0fdf4 !important; 
             color: #16a34a !important;
             border-color: #16a34a !important;
         }
         
-        /* ✨ 呼吸發光動畫 (Breathe Glow) */
         @keyframes breathe {
             0%, 100% { box-shadow: 0 0 4px rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.3); }
             50% { box-shadow: 0 0 16px rgba(34, 197, 94, 0.5); border-color: rgba(34, 197, 94, 0.8); }
@@ -44,7 +42,7 @@
                 <h1 class="text-2xl font-black text-green-600 italic tracking-tighter">GUAVA HUB 🍹</h1>
                 <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 inline-flex items-center gap-2">
                     <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">取貨資訊</span>
-                    <p class="text-xs text-green-800 font-bold">自由黃昏市場  排  號 (請依預約時間取貨)</p> 
+                    <p id="display-location" class="text-xs text-green-800 font-bold italic">讀取中...</p> 
                 </div>
             </div>
 
@@ -123,6 +121,12 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        // ✨ 📍 即時監聽後台的地點設定
+        db.ref('config/pickupLocation').on('value', snap => {
+            const loc = snap.val() || "請洽團購主確認地點";
+            document.getElementById('display-location').innerText = loc;
+        });
 
         const products = [
             { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '5.png', desc: '原味鮮榨' },
@@ -226,4 +230,3 @@
     </script>
 </body>
 </html>
-
