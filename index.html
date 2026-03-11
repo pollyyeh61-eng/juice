@@ -41,11 +41,11 @@
                     <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
                         <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨機鮮榨．渣汁分離
                     </h2>
-                    <p class="text-sm text-stone-600 leading-relaxed">
+                    <p class="text-sm text-stone-600 leading-relaxed font-medium">
                         本芭樂汁採用慢磨技術，<span class="text-green-600 font-bold">渣與汁完全分離</span>，保留最高營養價值。與一般加水加糖的果汁攤不同，我們堅持<span class="font-bold">無糖、無水、原汁原味</span>。
                     </p>
-                    <div class="bg-stone-100 p-4 rounded-2xl text-xs space-y-1 text-stone-700">
-                        <p>💡 若覺太甜：飲用前可加適量水調整</p>
+                    <div class="bg-stone-100 p-4 rounded-2xl text-[13px] space-y-1.5 text-stone-700">
+                        <p>🥛 若覺太甜：飲用前可加適量水調整</p>
                         <p>✨ 進階吃法：加入甘梅粉更具風味！</p>
                     </div>
                 </div>
@@ -58,10 +58,10 @@
 
     <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-all duration-500 border border-white/10">
         <div class="pl-2">
-            <p id="item-count" class="text-[10px] opacity-50 font-bold tracking-widest uppercase">已選擇商品</p>
+            <p id="item-count" class="text-[10px] opacity-50 font-bold tracking-widest uppercase">已選擇數量</p>
             <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
-        <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">
+        <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active transition-transform">
             結帳去
         </button>
     </div>
@@ -76,9 +76,9 @@
     <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
     <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 border-t border-stone-100 max-w-2xl mx-auto">
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
-        <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
+        <h2 class="text-2xl font-black mb-6 text-stone-800">確認訂單</h2>
         <div id="summary-list" class="space-y-4 mb-8"></div>
-        <input type="text" id="user-name" placeholder="請輸入姓名 (取貨用)" class="w-full bg-stone-100 p-5 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-green-500 mb-4">
+        <input type="text" id="user-name" placeholder="請輸入姓名 (取貨用)" class="w-full bg-stone-100 p-5 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-green-500 mb-4 text-lg">
         <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">
             送出訂單 🚀
         </button>
@@ -94,11 +94,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 🛍️ 商品設定：加入 promo (優惠價)
+        // 🛍️ 修正後的產品資料：僅大瓶與小瓶
         const products = [
             { id: 'big', name: '經典芭樂汁 (大瓶)', price: 70, promo: 120, img: '5.png' },
-            { id: 'small', name: '經典芭樂汁 (小瓶)', price: 60, promo: 100, img: '2.png' },
-            { id: 'party', name: '芭樂檸檬派對', price: 65, promo: 110, img: '4.png' }
+            { id: 'small', name: '經典芭樂汁 (小瓶)', price: 60, promo: 100, img: '2.png' }
         ];
 
         let cart = {};
@@ -112,9 +111,11 @@
                         <div class="flex items-center gap-4">
                             <img src="${p.img}" class="w-20 h-20 rounded-[2rem] object-cover" alt="${p.name}">
                             <div>
-                                <h3 class="font-bold text-stone-800 text-lg">${p.name}</h3>
-                                <p class="text-green-600 font-black text-xl leading-none mt-1">$${p.price}</p>
-                                <p class="text-[10px] text-stone-400 font-bold mt-1 tracking-tight">2瓶合購價 $${p.promo}</p>
+                                <h3 class="font-bold text-stone-800 text-lg leading-tight">${p.name}</h3>
+                                <div class="mt-1">
+                                    <span class="text-green-600 font-black text-xl">$${p.price}</span>
+                                    <span class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-bold ml-1">2瓶合購 $${p.promo}</span>
+                                </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-4 bg-stone-50 p-1.5 rounded-full border border-stone-100">
@@ -126,17 +127,18 @@
             });
         }
 
-        // 🧮 核心邏輯：計算二瓶優惠
+        // 🧮 計算二瓶優惠邏輯
         function getSubtotal(id, qty) {
             const p = products.find(x => x.id === id);
-            const pairs = Math.floor(qty / 2);
-            const singles = qty % 2;
+            const pairs = Math.floor(qty / 2); // 成雙的數量
+            const singles = qty % 2;           // 單瓶的數量
             return (pairs * p.promo) + (singles * p.price);
         }
 
         function updateCart(id, change) {
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
+            
             document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
             
             let total = 0, count = 0;
@@ -175,13 +177,16 @@
 
         function checkAdmin() {
             const pw = prompt("請輸入管理密碼：");
-            if (pw === "0000") { sessionStorage.setItem("adminAuth", "true"); window.location.href = "後台.html"; }
+            if (pw === "0000") { 
+                sessionStorage.setItem("adminAuth", "true"); 
+                window.location.href = "後台.html"; 
+            }
             else if (pw !== null) alert("密碼錯誤！");
         }
 
         function sendOrder() {
             const name = document.getElementById('user-name').value;
-            if(!name) return alert("請輸入姓名！");
+            if(!name) return alert("請輸入姓名唷！");
             const btn = document.getElementById('send-btn');
             btn.innerText = "傳送中..."; btn.disabled = true;
 
@@ -191,8 +196,14 @@
             }).join(', ');
 
             db.ref('orders').push({
-                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
-            }).then(() => { alert("🎉 下單成功！"); location.reload(); });
+                customer: name, 
+                items: detail, 
+                total: document.getElementById('total-price').innerText, 
+                time: Date.now()
+            }).then(() => { 
+                alert("🎉 下單成功！請至指定地點領取。"); 
+                location.reload(); 
+            });
         }
 
         render();
