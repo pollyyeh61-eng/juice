@@ -34,8 +34,8 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="location.reload()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">
-                    <span class="text-sm">🏠</span> 首頁
+                <button onclick="addToHomeScreen()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">
+                    <span class="text-sm">📲</span> 下載 APP
                 </button>
                 <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">
                     <span class="text-sm">💰</span> 收銀
@@ -58,12 +58,10 @@
                     <p class="text-sm text-stone-600 leading-relaxed font-medium">
                         堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離，保留最高營養。堅持<span class="font-bold text-green-600">無糖、無水</span>。
                     </p>
-                    <div class="bg-stone-50 p-4 rounded-2xl border border-dashed border-stone-200">
-                        <p class="text-[10px] font-bold text-stone-400 uppercase mb-1 flex items-center gap-1">
-                            <span class="text-xs">💡</span> 建議喝法
-                        </p>
-                        <p class="text-xs text-stone-600 leading-normal font-medium">
-                            建議於兩日內飲用完畢，飲用前請先搖勻。加入少許梅粉或檸檬汁，風味更佳！
+                    <div class="bg-green-50/50 p-4 rounded-2xl border border-green-100/50">
+                        <p class="text-xs text-green-800 leading-relaxed font-bold">
+                            💡 <span class="text-green-600">建議喝法：</span><br>
+                            兩日內飲用完畢，飲用前請先搖勻。可加入少許梅粉或檸檬汁，風味更佳！
                         </p>
                     </div>
                 </div>
@@ -91,7 +89,6 @@
                         <p id="display-location" class="text-sm font-black text-stone-800 leading-tight">--</p>
                     </div>
                 </div>
-                <p class="text-[10px] text-center text-stone-400 font-medium tracking-tight">✨ 感謝您的支持，新鮮芭樂汁等您領取！</p>
             </div>
         </footer>
     </main>
@@ -159,16 +156,13 @@
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
             document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
-            
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
                 const p = products.find(x => x.id === pid);
                 total += p.price * cart[pid];
                 count += cart[pid];
             });
-
             document.getElementById('total-price').innerText = total;
-            document.getElementById('item-count').innerText = `${count} ITEMS`;
             document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(160px)';
         }
 
@@ -177,16 +171,10 @@
             list.innerHTML = '';
             Object.keys(cart).forEach(id => {
                 const p = products.find(x => x.id === id);
-                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl">
-                    <span>${p.name} x${cart[id]}</span>
-                    <span>$${p.price * cart[id]}</span>
-                </div>`;
+                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
             });
             document.getElementById('overlay').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('overlay').style.opacity = '1';
-                document.getElementById('drawer').classList.add('drawer-up');
-            }, 10);
+            setTimeout(() => { document.getElementById('overlay').style.opacity = '1'; document.getElementById('drawer').classList.add('drawer-up'); }, 10);
         }
 
         function closeDrawer() {
@@ -204,7 +192,6 @@
             const now = new Date();
             const orderTime = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const currentLoc = document.getElementById('current-location').innerText;
-
             const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
 
             db.ref('orders').push({
@@ -215,11 +202,9 @@
                 document.getElementById('display-time').innerText = orderTime;
                 document.getElementById('display-location').innerText = currentLoc.split('(')[0].trim();
                 document.getElementById('order-success-info').classList.remove('hidden');
-
                 cart = {}; render();
                 document.getElementById('total-price').innerText = "0";
                 document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
-                
                 setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 300);
                 btn.innerText = "送出預約 🚀"; btn.disabled = false;
             });
@@ -229,7 +214,10 @@
             if (sessionStorage.getItem("adminAuth") === "true") { window.location.href = targetUrl; return; }
             const pw = prompt("請輸入密碼：");
             if (pw === "0000") { sessionStorage.setItem("adminAuth", "true"); window.location.href = targetUrl; }
-            else if (pw !== null) alert("密碼錯誤！");
+        }
+
+        function addToHomeScreen() {
+            alert("💡 下載 APP 方式：\n\n【iOS】點擊下方分享圖示 ➔ 加入主畫面\n【Android】點擊右上方三個點 ➔ 安裝應用程式");
         }
 
         render();
