@@ -15,8 +15,15 @@
             100% { border-color: #e2e8f0; }
         }
         .sync-glow { animation: sync-pulse 2s infinite; }
-        /* 抽屜平滑過渡 */
         #history-drawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* 新增：當時間被客戶修改時的提醒動畫 */
+        @keyframes time-change-blink {
+            0% { background-color: transparent; }
+            50% { background-color: #fef3c7; }
+            100% { background-color: transparent; }
+        }
+        .time-updated { animation: time-change-blink 2s infinite; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-24">
@@ -106,7 +113,6 @@
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mb-4"></div>
             <h2 class="text-xl font-black text-slate-800">📜 歷史預約紀錄</h2>
         </div>
-        
         <div class="p-4 bg-slate-50 space-y-2 sticky top-[88px] z-10 border-b border-slate-100">
             <div class="flex gap-2">
                 <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋姓名..." class="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500">
@@ -114,9 +120,7 @@
             </div>
             <p class="text-[10px] text-slate-400 font-bold px-1">提示：不選日期將顯示全部歷史紀錄</p>
         </div>
-
-        <div id="history-list" class="flex-1 overflow-y-auto divide-y divide-slate-50 pb-10">
-            </div>
+        <div id="history-list" class="flex-1 overflow-y-auto divide-y divide-slate-50 pb-10"></div>
     </div>
 
     <div class="fixed bottom-6 right-6 z-40">
@@ -139,19 +143,7 @@
 
         const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
 
-        function toggleHistory(show) {
-            const drawer = document.getElementById('history-drawer');
-            const overlay = document.getElementById('history-overlay');
-            if (show) {
-                overlay.classList.remove('hidden');
-                setTimeout(() => { overlay.style.opacity = '1'; drawer.style.transform = 'translateY(0)'; }, 10);
-            } else {
-                overlay.style.opacity = '0';
-                drawer.style.transform = 'translateY(100%)';
-                setTimeout(() => overlay.classList.add('hidden'), 300);
-            }
-        }
-
+        // 監聽待處理訂單
         db.ref('orders').on('value', snapshot => {
             const liveDiv = document.getElementById('live-orders');
             liveDiv.innerHTML = '';
@@ -165,24 +157,32 @@
                 return; 
             }
             
-            Object.keys(data).forEach(id => {
-                const order = data[id];
+            // 將訂單轉為陣列並按取貨時間排序，方便老闆看順序
+            const sortedOrders = Object.keys(data).map(key => ({ id: key, ...data[key] }))
+                .sort((a, b) => (a.pickup_time || "99:99").localeCompare(b.pickup_time || "99:99"));
+
+            sortedOrders.forEach(order => {
                 if(order.items) {
                     order.items.split(', ').forEach(itemStr => {
                         const [name, qty] = itemStr.split('x');
                         if (prepStats[name] !== undefined) { prepStats[name] += parseInt(qty); }
                     });
                 }
+                
                 const orderTime = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
                 liveDiv.innerHTML += `
                     <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-green-500 flex justify-between items-center transition-all hover:shadow-md mx-2">
                         <div class="flex-1">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">填單:${orderTime} | <span class="text-green-600 font-black">預計取貨:${order.pickup_time || '未填'}</span></p>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase">填單:${orderTime}</span>
+                                <span class="bg-red-50 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-100">預計取貨：${order.pickup_time || '未填'}</span>
+                            </div>
                             <h3 class="font-black text-slate-800 text-lg leading-tight">${order.customer}</h3>
                             <p class="text-slate-500 text-sm mt-1 font-medium">${order.items}</p>
                             <p class="text-green-600 font-black mt-1">$${order.total}</p>
                         </div>
-                        <button onclick="completeOrder('${id}')" class="ml-4 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold btn-active">完成</button>
+                        <button onclick="completeOrder('${order.id}')" class="ml-4 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold btn-active">完成</button>
                     </div>`;
             });
             renderPrepSummary(prepStats);
@@ -198,27 +198,20 @@
             `).join('');
         }
 
-        // --- 核心修正：確保連動歷史紀錄 ---
         function completeOrder(id) {
             const orderRef = db.ref('orders/' + id);
             orderRef.once('value', snapshot => {
                 const data = snapshot.val();
                 if (data) {
-                    const historyData = {
-                        ...data,
-                        status: 'completed',
-                        completedAt: Date.now() // 標記完成時間
-                    };
-                    // 先存入歷史，成功後再移除訂單，確保不丟單
+                    const historyData = { ...data, status: 'completed', completedAt: Date.now() };
                     db.ref('history').push(historyData).then(() => {
                         return orderRef.remove();
-                    }).then(() => {
-                        console.log("訂單已結案並同步至歷史");
                     });
                 }
             });
         }
 
+        // 歷史紀錄與營收統計邏輯
         let allHistory = [];
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
@@ -229,14 +222,12 @@
                 Object.keys(data).forEach(id => {
                     const h = data[id];
                     allHistory.push({id, ...h});
-                    // 只統計「原始訂單日期」是今天的營收
                     if (new Date(h.timestamp).toDateString() === todayStr) { 
                         todayRev += parseInt(h.total || 0); 
                     }
                 });
             }
             document.getElementById('today-total').innerText = todayRev.toLocaleString();
-            // 排序：完成時間越新的越上面
             allHistory.sort((a, b) => (b.completedAt || b.timestamp) - (a.completedAt || a.timestamp));
             filterHistory();
         });
@@ -279,6 +270,20 @@
 
         function deleteHistory(id) { if(confirm('永久刪除這筆紀錄？')) { db.ref('history/' + id).remove(); } }
 
+        function toggleHistory(show) {
+            const drawer = document.getElementById('history-drawer');
+            const overlay = document.getElementById('history-overlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => { overlay.style.opacity = '1'; drawer.style.transform = 'translateY(0)'; }, 10);
+            } else {
+                overlay.style.opacity = '0';
+                drawer.style.transform = 'translateY(100%)';
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // 地點與狀態設定
         db.ref('config/pickupLocationData').on('value', snap => {
             const data = snap.val();
             if(data) {
