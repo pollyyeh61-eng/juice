@@ -1,219 +1,78 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>芭樂汁團購｜GUAVA HUB</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#22c55e">
-    <link rel="apple-touch-icon" href="1.png">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUAVA HUB 預約系統</title>
     <style>
-        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
-        .drawer-up { transform: translateY(0) !important; }
-        .btn-active:active { transform: scale(0.95); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8f8f8; display: flex; justify-content: center; padding: 20px; }
+        .card { width: 100%; max-width: 400px; background: white; border-radius: 30px; border: 2px solid #2ecc71; padding: 20px; box-sizing: border-box; }
+        
+        /* 標頭區塊 */
+        .status-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .check-icon { width: 40px; height: 40px; background: #2ecc71; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; margin-right: 15px; }
+        .title { font-size: 1.2rem; font-weight: bold; }
+        .user-name { color: #2ecc71; }
+        .subtitle { color: #888; font-size: 0.9rem; margin-top: 5px; }
+
+        /* 預約資訊欄位 */
+        .info-container { display: flex; gap: 10px; margin-top: 15px; }
+        .info-box { flex: 1; padding: 15px; border-radius: 15px; text-align: center; }
+        
+        /* 時間軸選擇器樣式 */
+        .time-box { background-color: #fff0f0; border: 1px solid #ffdede; cursor: pointer; }
+        .time-label { color: #e74c3c; font-size: 0.8rem; margin-bottom: 5px; }
+        .time-select { 
+            width: 100%; 
+            border: none; 
+            background: transparent; 
+            color: #e74c3c; 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            text-align: center;
+            outline: none;
+            cursor: pointer;
+            appearance: none; /* 隱藏原生箭頭讓視覺更乾淨 */
+        }
+
+        /* 地點顯示 */
+        .location-box { background-color: #f5f5f5; text-align: left; }
+        .location-label { color: #888; font-size: 0.8rem; margin-bottom: 5px; }
+        .location-text { font-size: 0.9rem; font-weight: bold; color: #333; line-height: 1.4; }
     </style>
 </head>
-<body class="bg-stone-50 min-h-screen">
+<body>
 
-    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-4xl mx-auto flex flex-col gap-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-black text-green-600 italic tracking-tighter leading-none">GUAVA HUB 🍹</h1>
-                <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 flex items-center gap-2">
-                    <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
-                    <p id="current-location" class="text-xs text-green-800 font-bold">自由黃昏市場 2排94號 (02:00 開攤)</p> 
-                </div>
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="addToHomeScreen()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
-                <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">💰 收銀</button>
-                <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">⚙️ 管理</button>
-            </div>
+<div class="card">
+    <div class="status-header">
+        <div class="check-icon">✓</div>
+        <div>
+            <div class="title">預約成功！<span class="user-name">POLLY 同學</span></div>
+            <div class="subtitle">請向現場人員出示此畫面領取</div>
         </div>
-    </nav>
-
-    <main class="max-w-4xl mx-auto p-4 pb-12">
-        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
-            <div class="flex flex-col md:flex-row items-center gap-6">
-                <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
-                <div class="flex-1 space-y-4">
-                    <div>
-                        <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
-                            <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
-                        </h2>
-                        <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
-                            我們堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離技術，雖然費時，但能完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾<span class="font-bold text-green-600">無糖、無水、無添加</span>，讓您每一口都能喝到產地直送的真實鮮甜，體驗大自然最誠實的饋贈。
-                        </p>
-                    </div>
-                    
-                    <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
-                        <p class="text-[11px] font-bold text-green-600 uppercase mb-2">💡 建議喝法</p>
-                        <ul class="text-xs text-stone-700 space-y-1.5 font-bold">
-                            <li class="flex items-center gap-2 font-black">1. 喝原味（感受慢磨鮮榨的純粹）</li>
-                            <li class="flex items-center gap-2 font-black">2. 加檸檬汁（清爽果香層次倍增）</li>
-                            <li class="flex items-center gap-2 font-black">3. 加甘梅粉（經典風味回甘無窮）</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <div id="menu" class="space-y-4 mb-8"></div>
-
-        <div id="order-success-info" class="hidden transition-all duration-500 mb-20">
-            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-green-500 flex flex-col gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">✅</div>
-                    <div>
-                        <h3 class="font-black text-stone-800 text-sm uppercase tracking-wider">預約成功！<span id="display-name" class="text-green-600"></span></h3>
-                        <p class="text-[11px] text-stone-400 font-bold">請向現場人員出示此畫面領取</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
-                        <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">預約時間</p>
-                        <p id="display-time" class="text-base font-black text-red-600 leading-none">--:--</p>
-                    </div>
-                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
-                        <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取地點</p>
-                        <p id="display-location" class="text-xs font-black text-stone-800 leading-tight">--</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-all duration-500 border border-white/10">
-        <div class="pl-2">
-            <p class="text-[10px] opacity-50 font-bold tracking-widest uppercase text-white/60">Cart Total</p>
-            <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
-        </div>
-        <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">結帳去</button>
     </div>
 
-    <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
-    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 max-w-2xl mx-auto shadow-2xl">
-        <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
-        <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
-        <div id="summary-list" class="space-y-4 mb-8"></div>
-        <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-5 rounded-2xl font-bold mb-4 text-lg outline-none focus:ring-2 focus:ring-green-500">
-        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">送出預約 🚀</button>
+    <div class="info-container">
+        <div class="info-box time-box">
+            <div class="time-label">自選取貨時段</div>
+            <select class="time-select">
+                <option value="15:00">15:00</option>
+                <option value="15:30">15:30</option>
+                <option value="16:00">16:00</option>
+                <option value="16:30" selected>16:30</option>
+                <option value="17:00">17:00</option>
+                <option value="17:30">17:30</option>
+                <option value="18:00">18:00</option>
+                <option value="18:30">18:30</option>
+            </select>
+        </div>
+
+        <div class="info-box location-box">
+            <div class="location-label">自取地點</div>
+            <div class="location-text">自由黃昏市場<br>2 排 94 號</div>
+        </div>
     </div>
+</div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
-            databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
-            projectId: "studio-2370518507-ee5e3",
-            appId: "1:960169055224:web:7db7942ca9876fbdbf3c0d"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        const products = [
-            { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '5.png' },
-            { id: 'big_2', name: '大瓶 (2瓶優惠組)', price: 120, img: '5.png' },
-            { id: 'small_1', name: '小瓶 (單瓶)', price: 60, img: '2.png' },
-            { id: 'small_2', name: '小瓶 (2瓶優惠組)', price: 100, img: '2.png' }
-        ];
-
-        let cart = {};
-
-        function render() {
-            const menu = document.getElementById('menu');
-            menu.innerHTML = '';
-            products.forEach(p => {
-                const qty = cart[p.id] || 0;
-                menu.innerHTML += `
-                    <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100">
-                        <div class="flex items-center gap-3">
-                            <img src="${p.img}" class="w-16 h-16 rounded-[1.5rem] object-cover">
-                            <div>
-                                <h3 class="font-bold text-stone-800 text-base leading-tight">${p.name}</h3>
-                                <p class="text-green-600 font-black text-lg">$${p.price}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 bg-stone-50 p-1 rounded-full border border-stone-100">
-                            <button onclick="updateCart('${p.id}', -1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300">-</button>
-                            <span id="qty-${p.id}" class="font-black w-4 text-center">${qty}</span>
-                            <button onclick="updateCart('${p.id}', 1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600">+</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function updateCart(id, change) {
-            cart[id] = (cart[id] || 0) + change;
-            if (cart[id] <= 0) delete cart[id];
-            document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
-            let total = 0, count = 0;
-            Object.keys(cart).forEach(pid => {
-                total += products.find(x => x.id === pid).price * cart[pid];
-                count += cart[pid];
-            });
-            document.getElementById('total-price').innerText = total;
-            document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(160px)';
-        }
-
-        function openDrawer() {
-            const list = document.getElementById('summary-list');
-            list.innerHTML = '';
-            Object.keys(cart).forEach(id => {
-                const p = products.find(x => x.id === id);
-                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
-            });
-            document.getElementById('overlay').classList.remove('hidden');
-            setTimeout(() => { document.getElementById('overlay').style.opacity = '1'; document.getElementById('drawer').classList.add('drawer-up'); }, 10);
-        }
-
-        function closeDrawer() {
-            document.getElementById('overlay').style.opacity = '0';
-            document.getElementById('drawer').classList.remove('drawer-up');
-            setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
-        }
-
-        function sendOrder() {
-            const name = document.getElementById('user-name').value;
-            if(!name) return alert("請輸入姓名！");
-            
-            const btn = document.getElementById('send-btn');
-            btn.innerText = "傳送預約中..."; btn.disabled = true;
-
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            const locStr = document.getElementById('current-location').innerText.split('(')[0].trim();
-            const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
-
-            db.ref('orders').push({
-                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
-            }).then(() => { 
-                closeDrawer();
-                document.getElementById('display-name').innerText = name + " 同學";
-                document.getElementById('display-time').innerText = timeStr;
-                document.getElementById('display-location').innerText = locStr;
-                document.getElementById('order-success-info').classList.remove('hidden');
-                cart = {}; render();
-                document.getElementById('total-price').innerText = "0";
-                document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
-                btn.innerText = "送出預約 🚀"; btn.disabled = false;
-                setTimeout(() => document.getElementById('order-success-info').scrollIntoView({ behavior: 'smooth' }), 500);
-            });
-        }
-
-        function checkAuth(url) {
-            if(sessionStorage.getItem('admin')==='ok') { window.location.href=url; return; }
-            if(prompt('密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
-        }
-
-        function addToHomeScreen() { alert("點擊分享圖示 ➔ 加入主畫面"); }
-
-        render();
-    </script>
 </body>
 </html>
