@@ -51,18 +51,29 @@
         <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
             <div class="flex flex-col md:flex-row items-center gap-6">
                 <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
-                <div class="flex-1 space-y-3">
-                    <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
-                        <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
-                    </h2>
-                    <p class="text-sm text-stone-600 leading-relaxed font-medium">
-                        堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離，保留最高營養。堅持<span class="font-bold text-green-600">無糖、無水</span>。
-                    </p>
-                    <div class="bg-green-50/50 p-4 rounded-2xl border border-green-100/50">
-                        <p class="text-xs text-green-800 leading-relaxed font-bold">
-                            💡 <span class="text-green-600">建議喝法：</span><br>
-                            兩日內飲用完畢，飲用前請先搖勻。可加入少許梅粉或檸檬汁，風味更佳！
+                <div class="flex-1 space-y-4">
+                    <div>
+                        <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
+                            <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
+                        </h2>
+                        <p class="text-sm text-stone-600 leading-relaxed font-medium mt-1">
+                            採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離，堅持<span class="font-bold text-green-600">無糖、無水</span>。
                         </p>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3 bg-green-600 p-2.5 rounded-2xl">
+                            <span class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs text-white">✓</span>
+                            <p class="text-xs font-black text-white">建議於兩日內飲用完畢，口感最新鮮</p>
+                        </div>
+                        <div class="flex items-center gap-3 bg-green-600 p-2.5 rounded-2xl">
+                            <span class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs text-white">✓</span>
+                            <p class="text-xs font-black text-white">飲用前請先搖勻，自然沉澱為正常現象</p>
+                        </div>
+                        <div class="flex items-center gap-3 bg-green-600 p-2.5 rounded-2xl">
+                            <span class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs text-white">✓</span>
+                            <p class="text-xs font-black text-white">加少許梅粉或檸檬汁，風味更有層次</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -95,7 +106,7 @@
 
     <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-all duration-500 border border-white/10">
         <div class="pl-2">
-            <p id="item-count" class="text-[10px] opacity-50 font-bold tracking-widest uppercase">Cart Total</p>
+            <p class="text-[10px] opacity-50 font-bold tracking-widest uppercase text-white/60">Cart Total</p>
             <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
         <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">結帳去</button>
@@ -158,8 +169,7 @@
             document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
-                const p = products.find(x => x.id === pid);
-                total += p.price * cart[pid];
+                total += products.find(x => x.id === pid).price * cart[pid];
                 count += cart[pid];
             });
             document.getElementById('total-price').innerText = total;
@@ -186,9 +196,6 @@
         function sendOrder() {
             const name = document.getElementById('user-name').value;
             if(!name) return alert("請輸入姓名！");
-            const btn = document.getElementById('send-btn');
-            btn.innerText = "預約傳送中..."; btn.disabled = true;
-
             const now = new Date();
             const orderTime = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const currentLoc = document.getElementById('current-location').innerText;
@@ -206,7 +213,6 @@
                 document.getElementById('total-price').innerText = "0";
                 document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
                 setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 300);
-                btn.innerText = "送出預約 🚀"; btn.disabled = false;
             });
         }
 
