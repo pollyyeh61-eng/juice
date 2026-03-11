@@ -67,7 +67,8 @@
         <div id="menu" class="space-y-4 mb-8"></div>
 
         <div id="order-success-info" class="hidden transition-all duration-500 mb-20">
-            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-green-500 flex flex-col gap-4">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-green-500 flex flex-col gap-4 relative">
+                <button onclick="clearOrderMemory()" class="absolute top-4 right-4 text-stone-300 text-xs font-bold">清除紀錄</button>
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">✅</div>
                     <div>
@@ -121,21 +122,17 @@
     </div>
 
     <script>
-        // PWA 安裝偵測：核心邏輯
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            console.log("PWA偵測成功：已備妥安裝指令");
         });
 
         async function triggerPWAInstall() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
                 deferredPrompt = null;
             } else {
-                // 針對 iOS 或已安裝環境的彈窗指示
                 alert("點擊分享圖示 ➔ 加入主畫面");
             }
         }
@@ -157,6 +154,29 @@
         ];
 
         let cart = {};
+
+        // --- 本地記憶邏輯 ---
+        window.onload = () => {
+            const savedOrder = localStorage.getItem('lastOrder');
+            if (savedOrder) {
+                const data = JSON.parse(savedOrder);
+                showSuccessCard(data.name, data.time, data.location);
+            }
+        };
+
+        function showSuccessCard(name, time, location) {
+            document.getElementById('display-name').innerText = name;
+            document.getElementById('display-time').innerText = time;
+            document.getElementById('display-location').innerText = location;
+            document.getElementById('order-success-info').classList.remove('hidden');
+        }
+
+        function clearOrderMemory() {
+            if(confirm("確定要清除手機上的預約紀錄嗎？")) {
+                localStorage.removeItem('lastOrder');
+                document.getElementById('order-success-info').classList.add('hidden');
+            }
+        }
 
         function render() {
             const menu = document.getElementById('menu');
@@ -221,13 +241,14 @@
             const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
 
             db.ref('orders').push({
-                customer: name, items: detail, total: document.getElementById('total-price').innerText, pickup_time: time, timestamp: Date.now()
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, pickup_time: time, status: 'pending', timestamp: Date.now()
             }).then(() => { 
+                // 存入手機記憶體
+                localStorage.setItem('lastOrder', JSON.stringify({ name: name, time: time, location: locStr }));
+                
                 closeDrawer();
-                document.getElementById('display-name').innerText = name;
-                document.getElementById('display-time').innerText = time;
-                document.getElementById('display-location').innerText = locStr;
-                document.getElementById('order-success-info').classList.remove('hidden');
+                showSuccessCard(name, time, locStr);
+                
                 cart = {}; render();
                 document.getElementById('total-price').innerText = "0";
                 document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
