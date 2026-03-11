@@ -16,7 +16,7 @@
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         .btn-active:active { transform: scale(0.95); }
-        /* 電腦版改為雙欄顯示，畫面更豐富 */
+        /* 電腦版雙欄顯示 */
         @media (min-width: 768px) {
             #menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
         }
@@ -38,7 +38,7 @@
 
     <main class="max-w-4xl mx-auto p-4 pb-48">
         
-        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6 transition-all hover:shadow-md">
             <div class="flex flex-col md:flex-row items-center gap-6">
                 <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
                 <div class="flex-1 space-y-3">
@@ -70,15 +70,23 @@
         </button>
     </div>
 
-    <button onclick="checkAdmin()" class="fixed bottom-32 right-6 w-14 h-14 bg-white border-2 border-green-500 rounded-full shadow-xl flex items-center justify-center z-40 btn-active">
-        <div class="text-center">
-            <p class="text-[10px] font-bold text-green-600 leading-none">管理</p>
-            <span class="text-lg">⚙️</span>
-        </div>
-    </button>
+    <div class="fixed bottom-32 right-6 flex flex-col gap-3 z-40">
+        <button onclick="checkAuth('收銀.html')" class="w-14 h-14 bg-stone-800 text-white rounded-full shadow-xl flex items-center justify-center btn-active border-2 border-stone-700">
+            <div class="text-center">
+                <p class="text-[10px] font-bold leading-none">收銀</p>
+                <span class="text-lg">💰</span>
+            </div>
+        </button>
+        <button onclick="checkAuth('後台.html')" class="w-14 h-14 bg-white border-2 border-green-500 rounded-full shadow-xl flex items-center justify-center btn-active">
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-green-600 leading-none">管理</p>
+                <span class="text-lg">⚙️</span>
+            </div>
+        </button>
+    </div>
 
     <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
-    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 max-w-2xl mx-auto">
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 max-w-2xl mx-auto shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.3)]">
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
         <h2 class="text-2xl font-black mb-6 text-stone-800 font-bold">訂單確認</h2>
         <div id="summary-list" class="space-y-4 mb-8"></div>
@@ -98,7 +106,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 🛍️ 四個獨立商品選項
         const products = [
             { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '5.png', desc: '原味鮮榨' },
             { id: 'big_2', name: '大瓶 (2瓶優惠組)', price: 120, img: '5.png', desc: '超值省 $20' },
@@ -171,9 +178,16 @@
             setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
         }
 
-        function checkAdmin() {
+        function checkAuth(targetUrl) {
+            if (sessionStorage.getItem("adminAuth") === "true") {
+                window.location.href = targetUrl;
+                return;
+            }
             const pw = prompt("請輸入管理密碼：");
-            if (pw === "0000") { sessionStorage.setItem("adminAuth", "true"); window.location.href = "後台.html"; }
+            if (pw === "0000") { 
+                sessionStorage.setItem("adminAuth", "true"); 
+                window.location.href = targetUrl; 
+            }
             else if (pw !== null) alert("密碼錯誤！");
         }
 
@@ -189,8 +203,14 @@
             }).join(', ');
 
             db.ref('orders').push({
-                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
-            }).then(() => { alert("🎉 下單成功！"); location.reload(); });
+                customer: name, 
+                items: detail, 
+                total: document.getElementById('total-price').innerText, 
+                time: Date.now()
+            }).then(() => { 
+                alert("🎉 下單成功！請至櫃台領取。"); 
+                location.reload(); 
+            });
         }
         render();
     </script>
