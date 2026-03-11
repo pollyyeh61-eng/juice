@@ -102,16 +102,17 @@
 
     <div id="history-overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="toggleHistory(false)"></div>
     <div id="history-drawer" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[70] translate-y-full max-w-2xl mx-auto shadow-2xl h-[80vh] flex flex-col">
-        <div class="p-6 border-b border-slate-100 flex flex-col items-center sticky top-0 bg-white rounded-t-[3rem]">
+        <div class="p-6 border-b border-slate-100 flex flex-col items-center sticky top-0 bg-white rounded-t-[3rem] z-10">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mb-4"></div>
             <h2 class="text-xl font-black text-slate-800">📜 歷史預約紀錄</h2>
         </div>
         
-        <div class="p-4 bg-slate-50 space-y-2">
+        <div class="p-4 bg-slate-50 space-y-2 sticky top-[88px] z-10 border-b border-slate-100">
             <div class="flex gap-2">
                 <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋姓名..." class="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500">
                 <input type="date" id="date-input" onchange="filterHistory()" class="bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none">
             </div>
+            <p class="text-[10px] text-slate-400 font-bold px-1">提示：不選日期將顯示全部歷史紀錄</p>
         </div>
 
         <div id="history-list" class="flex-1 overflow-y-auto divide-y divide-slate-50 pb-10">
@@ -138,7 +139,6 @@
 
         const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
 
-        // --- 抽屜控制 ---
         function toggleHistory(show) {
             const drawer = document.getElementById('history-drawer');
             const overlay = document.getElementById('history-overlay');
@@ -152,11 +152,9 @@
             }
         }
 
-        // --- 核心：統計與訂單顯示 ---
         db.ref('orders').on('value', snapshot => {
             const liveDiv = document.getElementById('live-orders');
             liveDiv.innerHTML = '';
-            
             const data = snapshot.val();
             const prepStats = {};
             productNames.forEach(name => prepStats[name] = 0);
@@ -175,7 +173,6 @@
                         if (prepStats[name] !== undefined) { prepStats[name] += parseInt(qty); }
                     });
                 }
-
                 const orderTime = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 liveDiv.innerHTML += `
                     <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-green-500 flex justify-between items-center transition-all hover:shadow-md mx-2">
@@ -201,7 +198,6 @@
             `).join('');
         }
 
-        // --- 核心：完成訂單 (搬移至歷史) ---
         function completeOrder(id) {
             const orderRef = db.ref('orders/' + id);
             orderRef.once('value', snapshot => {
@@ -216,7 +212,6 @@
             });
         }
 
-        // --- 歷史紀錄讀取與搜尋 ---
         let allHistory = [];
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
@@ -231,30 +226,35 @@
                 });
             }
             document.getElementById('today-total').innerText = todayRev.toLocaleString();
+            // 排序：最新的在最上面
             allHistory.sort((a, b) => (b.completedAt || b.timestamp) - (a.completedAt || a.timestamp));
             filterHistory();
         });
 
+        // --- 修正後的顯示邏輯 ---
         function filterHistory() {
             const nameKey = document.getElementById('search-input').value.toLowerCase();
-            const dateKey = document.getElementById('date-input').value;
+            const dateKey = document.getElementById('date-input').value; // 格式: yyyy-mm-dd
             const listDiv = document.getElementById('history-list');
             listDiv.innerHTML = '';
             
             const filtered = allHistory.filter(h => {
                 const orderDate = new Date(h.timestamp).toISOString().split('T')[0];
-                return h.customer.toLowerCase().includes(nameKey) && (dateKey ? orderDate === dateKey : true);
+                const matchName = h.customer.toLowerCase().includes(nameKey);
+                // 關鍵：如果沒有選日期 (dateKey 為空)，則視為符合 (true)
+                const matchDate = dateKey ? (orderDate === dateKey) : true;
+                return matchName && matchDate;
             });
 
             if (filtered.length === 0) {
-                listDiv.innerHTML = '<p class="p-20 text-center text-slate-400">找不到紀錄</p>';
+                listDiv.innerHTML = '<p class="p-20 text-center text-slate-400 font-bold">目前尚無紀錄</p>';
                 return;
             }
 
             filtered.forEach(h => {
                 const dateObj = new Date(h.timestamp);
                 listDiv.innerHTML += `
-                    <div class="p-5 flex justify-between items-center hover:bg-slate-50">
+                    <div class="p-5 flex justify-between items-center hover:bg-slate-50 border-b border-slate-50">
                         <div>
                             <p class="text-[10px] font-bold text-slate-400 uppercase">${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | 取貨:${h.pickup_time || '-'}</p>
                             <h4 class="font-black text-slate-700">${h.customer}</h4>
@@ -270,7 +270,6 @@
 
         function deleteHistory(id) { if(confirm('永久刪除這筆紀錄？')) { db.ref('history/' + id).remove(); } }
 
-        // --- 地點與狀態同步 (保持原功能) ---
         db.ref('config/pickupLocationData').on('value', snap => {
             const data = snap.val();
             if(data) {
