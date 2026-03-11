@@ -16,6 +16,8 @@
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         .btn-active:active { transform: scale(0.95); }
+        /* 隱藏原生下拉箭頭讓 UI 更乾淨 */
+        .time-select-custom { appearance: none; -webkit-appearance: none; cursor: pointer; }
     </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
@@ -31,7 +33,7 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="addToHomeScreen()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
+                <a href="https://yourdomain.com/guava_hub.apk" download class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</a>
                 <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">💰 收銀</button>
                 <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">⚙️ 管理</button>
             </div>
@@ -48,7 +50,7 @@
                             <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
                         </h2>
                         <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
-                            我們堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離技術，雖然費時，但能完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾<span class="font-bold text-green-600">無糖、無水、無添加</span>，讓您每一口都能喝到產地直送的真實鮮甜。
+                            我們堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離技術，雖然費時，但能完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾<span class="font-bold text-green-600">無糖、無水、無添加</span>，讓您每一口都能喝到產地直送的真實鮮甜，體驗大自然最誠實的饋贈。
                         </p>
                     </div>
                     
@@ -77,8 +79,16 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
-                        <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">預約時間</p>
-                        <p id="display-time" class="text-base font-black text-red-600 leading-none">--:--</p>
+                        <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">自選取貨時段</p>
+                        <select id="display-time" class="time-select-custom w-full bg-transparent text-base font-black text-red-600 leading-none text-center outline-none">
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                        </select>
                     </div>
                     <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
                         <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取地點</p>
@@ -102,21 +112,6 @@
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
         <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
         <div id="summary-list" class="space-y-4 mb-8"></div>
-        
-        <p class="text-xs font-bold text-stone-400 mb-2 uppercase ml-1">自選取貨時段</p>
-        <select id="pickup-time" class="w-full bg-red-50 text-red-600 p-5 rounded-2xl font-bold mb-4 text-lg outline-none border border-red-100 appearance-none">
-            <option value="14:00">14:00</option>
-            <option value="14:30">14:30</option>
-            <option value="15:00">15:00</option>
-            <option value="15:30">15:30</option>
-            <option value="16:00">16:00</option>
-            <option value="16:30">16:30</option>
-            <option value="17:00">17:00</option>
-            <option value="17:30">17:30</option>
-            <option value="18:00" selected>18:00</option>
-            <option value="18:30">18:30</option>
-        </select>
-
         <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-5 rounded-2xl font-bold mb-4 text-lg outline-none focus:ring-2 focus:ring-green-500">
         <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">送出預約 🚀</button>
     </div>
@@ -195,25 +190,21 @@
 
         function sendOrder() {
             const name = document.getElementById('user-name').value;
-            const selectedTime = document.getElementById('pickup-time').value; // 取得自選時間
             if(!name) return alert("請輸入姓名！");
             
             const btn = document.getElementById('send-btn');
             btn.innerText = "傳送預約中..."; btn.disabled = true;
 
+            // 修改處：移除自動產生的 timeStr，讓客人從選單自選
             const locStr = document.getElementById('current-location').innerText.split('(')[0].trim();
             const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
 
             db.ref('orders').push({
-                customer: name, 
-                items: detail, 
-                total: document.getElementById('total-price').innerText, 
-                pickupTime: selectedTime, // 儲存客人選的時間
-                createdAt: Date.now()
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
             }).then(() => { 
                 closeDrawer();
-                document.getElementById('display-name').innerText = name + " 先生/女士";
-                document.getElementById('display-time').innerText = selectedTime; // 顯示自選時間
+                document.getElementById('display-name').innerText = name + " 同學";
+                // 預設選中 16:30，客人可隨時更改
                 document.getElementById('display-location').innerText = locStr;
                 document.getElementById('order-success-info').classList.remove('hidden');
                 cart = {}; render();
@@ -229,10 +220,7 @@
             if(prompt('密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
         }
 
-        function addToHomeScreen() { alert("點擊分享圖示 ➔ 加入主畫面"); }
-
         render();
     </script>
 </body>
 </html>
-
