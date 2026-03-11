@@ -15,14 +15,9 @@
             100% { border-color: #e2e8f0; }
         }
         .sync-glow { animation: sync-pulse 2s infinite; }
-        #history-drawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        @keyframes time-change-blink {
-            0% { background-color: transparent; }
-            50% { background-color: #fef3c7; }
-            100% { background-color: transparent; }
-        }
-        .time-updated { animation: time-change-blink 2s infinite; }
+        /* 歷史紀錄抽屜動畫調整：預設不隱藏 */
+        #history-drawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-24">
@@ -73,23 +68,13 @@
             <button onclick="updateLocation()" class="w-full mt-4 bg-green-600 text-white py-4 rounded-2xl font-bold btn-active shadow-lg shadow-green-200">更新地點與時間 🚀</button>
         </section>
 
-        <section class="bg-white p-6 rounded-[2rem] shadow-sm border-2 border-slate-100">
-            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">📢 門市狀態切換</h2>
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="setStatus('open')" id="btn-status-open" class="py-3 rounded-xl font-bold border-2 transition-all">營運中</button>
-                <button onclick="setStatus('soldout')" id="btn-status-soldout" class="py-3 rounded-xl font-bold border-2 transition-all">已售完</button>
-                <button onclick="setStatus('closed')" id="btn-status-closed" class="py-3 rounded-xl font-bold border-2 transition-all">結束營業</button>
-            </div>
-        </section>
-
-        <section class="bg-green-50 p-6 rounded-[2rem] shadow-md border-2 border-green-200 text-slate-800">
+        <section class="bg-green-50 p-6 rounded-[2rem] shadow-md border-2 border-green-200">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-black flex items-center gap-2 text-green-700">📊 今日待備貨總計</h2>
-                <span class="text-[10px] bg-green-200/50 border border-green-300 px-2 py-1 rounded font-bold text-green-700">待處理匯總</span>
+                <span class="text-[10px] bg-green-200 text-green-700 px-2 py-1 rounded font-bold">待處理匯總</span>
             </div>
             <div id="prep-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="text-center p-3 bg-white/60 rounded-2xl border border-green-100 text-xs text-green-400">載入中...</div>
-            </div>
+                </div>
         </section>
 
         <section>
@@ -104,29 +89,23 @@
                 <p class="text-slate-400 text-sm pl-2">載入中...</p>
             </div>
         </section>
-    </main>
 
-    <div id="history-overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="toggleHistory(false)"></div>
-    <div id="history-drawer" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[70] translate-y-full max-w-2xl mx-auto shadow-2xl h-[80vh] flex flex-col">
-        <div class="p-6 border-b border-slate-100 flex flex-col items-center sticky top-0 bg-white rounded-t-[3rem] z-10">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mb-4"></div>
-            <h2 class="text-xl font-black text-slate-800">📜 歷史預約紀錄</h2>
-        </div>
-        <div class="p-4 bg-slate-50 space-y-2 sticky top-[88px] z-10 border-b border-slate-100">
-            <div class="flex gap-2">
-                <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋姓名..." class="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500">
-                <input type="date" id="date-input" onchange="filterHistory()" class="bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none">
+        <hr class="border-slate-200 my-8">
+
+        <section id="history-section" class="bg-white rounded-[2rem] shadow-sm border-2 border-slate-100 flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex flex-col items-center bg-white">
+                <h2 class="text-xl font-black text-slate-800">📜 歷史預約紀錄</h2>
             </div>
-            <p class="text-[10px] text-slate-400 font-bold px-1">提示：不選日期將顯示全部歷史紀錄</p>
-        </div>
-        <div id="history-list" class="flex-1 overflow-y-auto divide-y divide-slate-50 pb-10"></div>
-    </div>
-
-    <div class="fixed bottom-6 right-6 z-40">
-        <button onclick="toggleHistory(true)" class="bg-slate-900 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl btn-active border-4 border-white">
-            📜
-        </button>
-    </div>
+            <div class="p-4 bg-slate-50 space-y-2 border-b border-slate-100">
+                <div class="flex gap-2">
+                    <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋姓名..." class="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500">
+                    <input type="date" id="date-input" onchange="filterHistory()" class="bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none">
+                </div>
+            </div>
+            <div id="history-list" class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto pb-10">
+                </div>
+        </section>
+    </main>
 
     <script>
         if (sessionStorage.getItem('admin') !== 'ok') { window.location.href = "index.html"; }
@@ -142,6 +121,7 @@
 
         const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
 
+        // 監聽訂單
         db.ref('orders').on('value', snapshot => {
             const liveDiv = document.getElementById('live-orders');
             liveDiv.innerHTML = '';
@@ -185,11 +165,11 @@
             renderPrepSummary(prepStats);
         });
 
-        // 修改點：更新 renderPrepSummary 內部生成的 HTML 樣式以配合同色系
+        // 修改點：強制使用淺綠色卡片樣式
         function renderPrepSummary(stats) {
             const prepDiv = document.getElementById('prep-summary');
             prepDiv.innerHTML = Object.entries(stats).map(([name, count]) => `
-                <div class="bg-white/80 p-3 rounded-2xl border border-green-100 flex flex-col items-center shadow-sm">
+                <div class="bg-white p-3 rounded-2xl border border-green-200 flex flex-col items-center shadow-sm">
                     <p class="text-[9px] font-bold text-green-600 mb-1 leading-tight h-6 text-center">${name}</p>
                     <p class="text-2xl font-black ${count > 0 ? 'text-green-500' : 'text-slate-300'}">${count}</p>
                 </div>
@@ -209,6 +189,7 @@
             });
         }
 
+        // 歷史紀錄邏輯
         let allHistory = [];
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
@@ -267,19 +248,7 @@
 
         function deleteHistory(id) { if(confirm('永久刪除這筆紀錄？')) { db.ref('history/' + id).remove(); } }
 
-        function toggleHistory(show) {
-            const drawer = document.getElementById('history-drawer');
-            const overlay = document.getElementById('history-overlay');
-            if (show) {
-                overlay.classList.remove('hidden');
-                setTimeout(() => { overlay.style.opacity = '1'; drawer.style.transform = 'translateY(0)'; }, 10);
-            } else {
-                overlay.style.opacity = '0';
-                drawer.style.transform = 'translateY(100%)';
-                setTimeout(() => overlay.classList.add('hidden'), 300);
-            }
-        }
-
+        // 地點同步邏輯
         db.ref('config/pickupLocationData').on('value', snap => {
             const data = snap.val();
             if(data) {
@@ -298,16 +267,6 @@
             const fullString = `${market} ${row}排${no}號 (${time} 開攤)`;
             db.ref('config').update({ pickupLocation: fullString, pickupLocationData: { market, row, no, time } }).then(() => alert("✅ 地點已同步"));
         }
-
-        db.ref('config/shopStatus').on('value', snap => {
-            const status = snap.val() || 'open';
-            const btns = { open: document.getElementById('btn-status-open'), soldout: document.getElementById('btn-status-soldout'), closed: document.getElementById('btn-status-closed') };
-            Object.values(btns).forEach(b => b.className = "py-3 rounded-xl font-bold border-2 border-slate-100 text-slate-400 bg-slate-50");
-            if(status === 'open') btns.open.className = "py-3 rounded-xl font-bold border-2 border-green-500 text-green-600 bg-green-50";
-            if(status === 'soldout') btns.soldout.className = "py-3 rounded-xl font-bold border-2 border-amber-500 text-amber-600 bg-amber-50";
-            if(status === 'closed') btns.closed.className = "py-3 rounded-xl font-bold border-2 border-red-500 text-red-600 bg-red-50";
-        });
-        function setStatus(s) { db.ref('config').update({ shopStatus: s }); }
     </script>
 </body>
 </html>
