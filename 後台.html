@@ -15,9 +15,6 @@
             100% { border-color: #e2e8f0; }
         }
         .sync-glow { animation: sync-pulse 2s infinite; }
-        
-        /* 歷史紀錄抽屜動畫調整：預設不隱藏 */
-        #history-drawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-24">
@@ -32,7 +29,6 @@
                 <h1 class="text-xl font-black tracking-tighter text-green-400">ADMIN</h1>
             </div>
             <div class="flex items-center gap-2">
-                <a href="收銀.html" class="text-[10px] font-bold bg-amber-500 text-black px-3 py-1.5 rounded-lg btn-active">💰 收銀統計</a>
                 <div id="stat" class="text-sm font-bold bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
                     今日營收: $<span id="today-total">0</span>
                 </div>
@@ -42,36 +38,10 @@
 
     <main class="max-w-4xl mx-auto p-4 space-y-6">
         
-        <section class="bg-white p-6 rounded-[2rem] shadow-sm border-2 border-slate-100 sync-glow">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">📍 今日取貨資訊設定</h2>
-                <span class="text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded-md font-bold uppercase">即時同步</span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="col-span-2 md:col-span-1">
-                    <label class="text-[10px] font-bold text-slate-400 ml-1">市場名稱</label>
-                    <input type="text" id="loc-market" placeholder="自由黃昏市場" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 ml-1">排</label>
-                    <input type="text" id="loc-row" placeholder="3" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 ml-1">號</label>
-                    <input type="text" id="loc-no" placeholder="15" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-                <div class="col-span-2 md:col-span-1">
-                    <label class="text-[10px] font-bold text-slate-400 ml-1">開攤時間</label>
-                    <input type="time" id="loc-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-            </div>
-            <button onclick="updateLocation()" class="w-full mt-4 bg-green-600 text-white py-4 rounded-2xl font-bold btn-active shadow-lg shadow-green-200">更新地點與時間 🚀</button>
-        </section>
-
         <section class="bg-green-50 p-6 rounded-[2rem] shadow-md border-2 border-green-200">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-black flex items-center gap-2 text-green-700">📊 今日待備貨總計</h2>
-                <span class="text-[10px] bg-green-200 text-green-700 px-2 py-1 rounded font-bold">待處理匯總</span>
+                <span class="text-[10px] bg-green-200 text-green-700 px-2 py-1 rounded font-bold">即時更新</span>
             </div>
             <div id="prep-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 </div>
@@ -90,20 +60,20 @@
             </div>
         </section>
 
-        <hr class="border-slate-200 my-8">
+        <section class="bg-white rounded-[2rem] shadow-sm border-2 border-slate-100 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                <h2 class="text-xl font-black text-slate-800 flex items-center gap-2">📜 歷史預約紀錄</h2>
+                <p class="text-xs text-slate-400 mt-1">顯示最近已完成的訂單</p>
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-b border-slate-100 flex gap-2">
+                <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋客戶姓名..." class="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500">
+                <input type="date" id="date-input" onchange="filterHistory()" class="bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none">
+            </div>
 
-        <section id="history-section" class="bg-white rounded-[2rem] shadow-sm border-2 border-slate-100 flex flex-col overflow-hidden">
-            <div class="p-6 border-b border-slate-100 flex flex-col items-center bg-white">
-                <h2 class="text-xl font-black text-slate-800">📜 歷史預約紀錄</h2>
+            <div id="history-list" class="divide-y divide-slate-100 min-h-[200px]">
+                <p class="p-10 text-center text-slate-400">載入歷史紀錄中...</p>
             </div>
-            <div class="p-4 bg-slate-50 space-y-2 border-b border-slate-100">
-                <div class="flex gap-2">
-                    <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋姓名..." class="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500">
-                    <input type="date" id="date-input" onchange="filterHistory()" class="bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none">
-                </div>
-            </div>
-            <div id="history-list" class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto pb-10">
-                </div>
         </section>
     </main>
 
@@ -121,7 +91,7 @@
 
         const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
 
-        // 監聽訂單
+        // 1. 監聽待處理訂單
         db.ref('orders').on('value', snapshot => {
             const liveDiv = document.getElementById('live-orders');
             liveDiv.innerHTML = '';
@@ -149,15 +119,15 @@
                 const orderTime = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
                 liveDiv.innerHTML += `
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-green-500 flex justify-between items-center transition-all hover:shadow-md mx-2">
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-green-500 flex justify-between items-center mx-2">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] text-slate-400 font-bold uppercase">填單:${orderTime}</span>
-                                <span class="bg-red-50 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-100">預計取貨：${order.pickup_time || '未填'}</span>
+                                <span class="text-[10px] text-slate-400 font-bold">填單:${orderTime}</span>
+                                <span class="bg-red-50 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-100">取貨：${order.pickup_time || '未填'}</span>
                             </div>
-                            <h3 class="font-black text-slate-800 text-lg leading-tight">${order.customer}</h3>
-                            <p class="text-slate-500 text-sm mt-1 font-medium">${order.items}</p>
-                            <p class="text-green-600 font-black mt-1">$${order.total}</p>
+                            <h3 class="font-black text-slate-800 text-lg">${order.customer}</h3>
+                            <p class="text-slate-500 text-sm">${order.items}</p>
+                            <p class="text-green-600 font-black">$${order.total}</p>
                         </div>
                         <button onclick="completeOrder('${order.id}')" class="ml-4 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold btn-active">完成</button>
                     </div>`;
@@ -165,51 +135,61 @@
             renderPrepSummary(prepStats);
         });
 
-        // 修改點：強制使用淺綠色卡片樣式
+        // 2. 渲染備貨總計
         function renderPrepSummary(stats) {
             const prepDiv = document.getElementById('prep-summary');
             prepDiv.innerHTML = Object.entries(stats).map(([name, count]) => `
                 <div class="bg-white p-3 rounded-2xl border border-green-200 flex flex-col items-center shadow-sm">
-                    <p class="text-[9px] font-bold text-green-600 mb-1 leading-tight h-6 text-center">${name}</p>
-                    <p class="text-2xl font-black ${count > 0 ? 'text-green-500' : 'text-slate-300'}">${count}</p>
+                    <p class="text-[9px] font-bold text-green-600 mb-1 leading-tight text-center h-6">${name}</p>
+                    <p class="text-2xl font-black ${count > 0 ? 'text-green-500' : 'text-slate-200'}">${count}</p>
                 </div>
             `).join('');
         }
 
+        // 3. 完成訂單動作
         function completeOrder(id) {
             const orderRef = db.ref('orders/' + id);
             orderRef.once('value', snapshot => {
                 const data = snapshot.val();
                 if (data) {
-                    const historyData = { ...data, status: 'completed', completedAt: Date.now() };
+                    const historyData = { 
+                        ...data, 
+                        status: 'completed', 
+                        completedAt: Date.now() 
+                    };
+                    // 先存入 history，再從 orders 刪除
                     db.ref('history').push(historyData).then(() => {
-                        return orderRef.remove();
+                        orderRef.remove();
                     });
                 }
             });
         }
 
-        // 歷史紀錄邏輯
+        // 4. 監聽歷史紀錄
         let allHistory = [];
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
             allHistory = [];
             let todayRev = 0;
             const todayStr = new Date().toDateString();
+
             if (data) {
                 Object.keys(data).forEach(id => {
                     const h = data[id];
-                    allHistory.push({id, ...h});
+                    allHistory.push({ id, ...h });
+                    // 累加今日營收
                     if (new Date(h.timestamp).toDateString() === todayStr) { 
                         todayRev += parseInt(h.total || 0); 
                     }
                 });
             }
             document.getElementById('today-total').innerText = todayRev.toLocaleString();
+            // 排序：最新的排上面
             allHistory.sort((a, b) => (b.completedAt || b.timestamp) - (a.completedAt || a.timestamp));
             filterHistory();
         });
 
+        // 5. 過濾與顯示歷史紀錄
         function filterHistory() {
             const nameKey = document.getElementById('search-input').value.toLowerCase();
             const dateKey = document.getElementById('date-input').value; 
@@ -225,47 +205,33 @@
             });
 
             if (filtered.length === 0) {
-                listDiv.innerHTML = '<p class="p-20 text-center text-slate-400 font-bold">目前尚無紀錄</p>';
+                listDiv.innerHTML = '<p class="p-10 text-center text-slate-400">尚無符合條件的歷史紀錄</p>';
                 return;
             }
 
             filtered.forEach(h => {
                 const dateObj = new Date(h.timestamp);
                 listDiv.innerHTML += `
-                    <div class="p-5 flex justify-between items-center hover:bg-slate-50 border-b border-slate-50">
+                    <div class="p-5 flex justify-between items-center hover:bg-slate-50 transition-colors">
                         <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | 取貨:${h.pickup_time || '-'}</p>
+                            <p class="text-[10px] font-bold text-slate-400">
+                                ${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | 取貨:${h.pickup_time || '-'}
+                            </p>
                             <h4 class="font-black text-slate-700">${h.customer}</h4>
                             <p class="text-xs text-slate-500">${h.items}</p>
                         </div>
                         <div class="text-right">
                             <p class="font-black text-slate-800">$${h.total}</p>
-                            <button onclick="deleteHistory('${h.id}')" class="text-[10px] text-red-300 font-bold mt-1">刪除</button>
+                            <button onclick="deleteHistory('${h.id}')" class="text-[10px] text-red-300 font-bold hover:text-red-500">刪除</button>
                         </div>
                     </div>`;
             });
         }
 
-        function deleteHistory(id) { if(confirm('永久刪除這筆紀錄？')) { db.ref('history/' + id).remove(); } }
-
-        // 地點同步邏輯
-        db.ref('config/pickupLocationData').on('value', snap => {
-            const data = snap.val();
-            if(data) {
-                document.getElementById('loc-market').value = data.market || "";
-                document.getElementById('loc-row').value = data.row || "";
-                document.getElementById('loc-no').value = data.no || "";
-                document.getElementById('loc-time').value = data.time || "";
+        function deleteHistory(id) {
+            if(confirm('確定要永久刪除這筆歷史紀錄嗎？')) {
+                db.ref('history/' + id).remove();
             }
-        });
-
-        function updateLocation() {
-            const market = document.getElementById('loc-market').value;
-            const row = document.getElementById('loc-row').value;
-            const no = document.getElementById('loc-no').value;
-            const time = document.getElementById('loc-time').value;
-            const fullString = `${market} ${row}排${no}號 (${time} 開攤)`;
-            db.ref('config').update({ pickupLocation: fullString, pickupLocationData: { market, row, no, time } }).then(() => alert("✅ 地點已同步"));
         }
     </script>
 </body>
