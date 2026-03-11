@@ -16,7 +16,6 @@
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         .btn-active:active { transform: scale(0.95); }
-        /* 電腦版雙欄顯示 */
         @media (min-width: 768px) {
             #menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
         }
@@ -24,88 +23,66 @@
 </head>
 <body class="bg-stone-50 min-h-screen">
 
-    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-4xl mx-auto space-y-3">
-            <div class="flex justify-between items-start">
-                <div class="space-y-1">
-                    <h1 class="text-2xl font-black text-green-600 italic tracking-tighter">GUAVA HUB 🍹</h1>
-                    <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 inline-flex items-center gap-2">
-                        <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
-                        <p class="text-xs text-green-800 font-bold">自由黃昏市場 2排94號 (02:00 開攤)</p> 
-                    </div>
-                </div>
-            </div>
+    <div class="fixed top-3 right-2 flex gap-1.5 z-[60]">
+        <button onclick="checkAuth('收銀.html')" class="h-9 px-3 bg-stone-800 text-white rounded-xl shadow-md flex items-center gap-1.5 btn-active border border-stone-700">
+            <span class="text-sm">💰</span>
+            <span class="text-[11px] font-bold tracking-tight">收銀</span>
+        </button>
+        <button onclick="checkAuth('後台.html')" class="h-9 px-3 bg-white border-2 border-green-500 rounded-xl shadow-md flex items-center gap-1.5 btn-active">
+            <span class="text-sm">⚙️</span>
+            <span class="text-[11px] font-bold text-green-600 tracking-tight">管理</span>
+        </button>
+    </div>
 
-            <div class="flex gap-2 w-full">
-                <button id="install-btn" class="hidden flex-1 h-9 bg-green-100 text-green-700 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1 btn-active border border-green-200 shadow-sm">
-                    <span>📲</span> 下載 APP
-                </button>
-                
-                <button onclick="checkAuth('收銀.html')" class="flex-1 h-9 bg-orange-100 text-orange-700 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1 btn-active border border-orange-200 shadow-sm">
-                    <span>💰</span> 收銀統計
-                </button>
-                
-                <button onclick="checkAuth('後台.html')" class="flex-1 h-9 bg-red-100 text-red-700 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1 btn-active border border-red-200 shadow-sm">
-                    <span>⚙️</span> 管理後台
-                </button>
+    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="space-y-1">
+                <h1 class="text-2xl font-black text-green-600 italic tracking-tighter">GUAVA HUB 🍹</h1>
+                <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 inline-flex items-center gap-2">
+                    <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
+                    <p class="text-xs text-green-800 font-bold">自由黃昏市場 2排94號 (02:00 開攤)</p> 
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto p-4">
-        
-        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6 transition-all hover:shadow-md">
+    <main class="max-w-4xl mx-auto p-4 pb-12">
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
             <div class="flex flex-col md:flex-row items-center gap-6">
-                <img src="image_331293.jpg" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁攤位">
+                <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
                 <div class="flex-1 space-y-3">
                     <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
                         <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
                     </h2>
                     <p class="text-sm text-stone-600 leading-relaxed font-medium">
-                        本芭樂汁採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離，保留最高營養。堅持<span class="font-bold text-green-600">無糖、無水</span>，給您最純粹的健康。
+                        堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離，保留最高營養。堅持<span class="font-bold text-green-600">無糖、無水</span>。
                     </p>
-                    
-                    <div class="bg-green-50/50 p-4 rounded-2xl border border-green-100 space-y-2">
-                        <h4 class="text-xs font-black text-green-700 flex items-center gap-1">
-                            <span>🥤</span> 建議喝法
-                        </h4>
-                        <div class="text-[13px] space-y-1.5 text-stone-700 font-medium">
-                            <p>• <span class="font-bold">純粹飲用</span>：直接飲用感受芭樂最濃郁的原始果香。</p>
-                            <p>• <span class="font-bold">加水調整</span>：若覺口感過於濃郁太甜，可依個人喜好加適量水或冰塊調整。</p>
-                            <p>• <span class="font-bold">風味進階</span>：加入少許甘梅粉，鹹甜交織更具層次風味！</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
 
-        <div id="menu" class="space-y-4 md:space-y-0">
-            </div>
+        <div id="menu" class="space-y-4 md:space-y-0 mb-8"></div>
 
-        <footer class="mt-8 mb-32">
-            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 flex flex-col gap-4">
+        <footer id="order-success-info" class="hidden transition-all duration-500">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-green-200 flex flex-col gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">📍</div>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">✅</div>
                     <div>
-                        <h3 class="font-black text-stone-800 text-sm uppercase tracking-wider">已完成預約取貨資訊</h3>
-                        <p class="text-[11px] text-stone-400 font-bold">下單後請於指定時間前往領取</p>
+                        <h3 class="font-black text-stone-800 text-sm uppercase tracking-wider">預約成功！<span id="display-name" class="text-green-600"></span></h3>
+                        <p class="text-[11px] text-stone-400 font-bold">請於下方預約時間前往領取</p>
                     </div>
                 </div>
-                
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100">
-                        <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取時間</p>
-                        <p class="text-sm font-black text-stone-800">14:00 - 18:30</p>
+                        <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">預約時間</p>
+                        <p id="display-time" class="text-sm font-black text-green-600">--:--</p>
                     </div>
                     <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100">
                         <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取地點</p>
                         <p class="text-sm font-black text-stone-800">自由黃昏市場 2排94號</p>
                     </div>
                 </div>
-                
-                <p class="text-[10px] text-center text-stone-400 font-medium">
-                    如有任何問題，請聯絡現場服務人員。
-                </p>
+                <p class="text-[10px] text-center text-stone-400 font-medium">如有任何問題，請聯絡現場服務人員。</p>
             </div>
         </footer>
     </main>
@@ -115,20 +92,16 @@
             <p id="item-count" class="text-[10px] opacity-50 font-bold tracking-widest uppercase">已選擇商品</p>
             <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
-        <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">
-            結帳去
-        </button>
+        <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">結帳去</button>
     </div>
 
     <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
     <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 max-w-2xl mx-auto">
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
-        <h2 class="text-2xl font-black mb-6 text-stone-800 font-bold">訂單確認</h2>
+        <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
         <div id="summary-list" class="space-y-4 mb-8"></div>
         <input type="text" id="user-name" placeholder="請輸入姓名 (取貨用)" class="w-full bg-stone-100 p-5 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-green-500 mb-4 text-lg">
-        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">
-            送出訂單 🚀
-        </button>
+        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">送出訂單 🚀</button>
     </div>
 
     <script>
@@ -140,27 +113,6 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
-        // PWA 安裝邏輯
-        let deferredPrompt;
-        const installBtn = document.getElementById('install-btn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.classList.remove('hidden');
-        });
-
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installBtn.classList.add('hidden');
-                }
-                deferredPrompt = null;
-            }
-        });
 
         const products = [
             { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '5.png', desc: '原味鮮榨' },
@@ -175,6 +127,7 @@
             const menu = document.getElementById('menu');
             menu.innerHTML = '';
             products.forEach(p => {
+                const qty = cart[p.id] || 0;
                 menu.innerHTML += `
                     <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100">
                         <div class="flex items-center gap-3">
@@ -187,7 +140,7 @@
                         </div>
                         <div class="flex items-center gap-3 bg-stone-50 p-1 rounded-full border border-stone-100">
                             <button onclick="updateCart('${p.id}', -1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300 btn-active">-</button>
-                            <span id="qty-${p.id}" class="font-black w-4 text-center text-md">0</span>
+                            <span id="qty-${p.id}" class="font-black w-4 text-center text-md">${qty}</span>
                             <button onclick="updateCart('${p.id}', 1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600 btn-active">+</button>
                         </div>
                     </div>`;
@@ -235,15 +188,9 @@
         }
 
         function checkAuth(targetUrl) {
-            if (sessionStorage.getItem("adminAuth") === "true") {
-                window.location.href = targetUrl;
-                return;
-            }
+            if (sessionStorage.getItem("adminAuth") === "true") { window.location.href = targetUrl; return; }
             const pw = prompt("請輸入管理密碼：");
-            if (pw === "0000") { 
-                sessionStorage.setItem("adminAuth", "true"); 
-                window.location.href = targetUrl; 
-            }
+            if (pw === "0000") { sessionStorage.setItem("adminAuth", "true"); window.location.href = targetUrl; }
             else if (pw !== null) alert("密碼錯誤！");
         }
 
@@ -253,28 +200,39 @@
             const btn = document.getElementById('send-btn');
             btn.innerText = "傳送中..."; btn.disabled = true;
 
+            const now = new Date();
+            const orderTime = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
             const detail = Object.keys(cart).map(id => {
                 const p = products.find(x => x.id === id);
                 return `${p.name}x${cart[id]}`;
             }).join(', ');
 
             db.ref('orders').push({
-                customer: name, 
-                items: detail, 
-                total: document.getElementById('total-price').innerText, 
-                time: Date.now()
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
             }).then(() => { 
-                alert("🎉 下單成功！請依下方資訊前往取貨。"); 
-                location.reload(); 
+                closeDrawer();
+                alert("🎉 預約成功！取貨資訊已顯示在下方。");
+
+                // 動態填入預約資訊
+                document.getElementById('display-name').innerText = name + " 同學";
+                document.getElementById('display-time').innerText = orderTime;
+                document.getElementById('order-success-info').classList.remove('hidden');
+
+                // 清空購物車狀態
+                cart = {};
+                render();
+                document.getElementById('total-price').innerText = "0";
+                document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
+                
+                // 捲動至資訊欄
+                setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 300);
+
+                btn.innerText = "送出訂單 🚀"; btn.disabled = false;
             });
         }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
-            });
-        }
-
         render();
     </script>
 </body>
