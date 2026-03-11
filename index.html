@@ -3,41 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>芭樂汁團購</title>
+    <title>芭樂汁團購｜GUAVA HUB</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#22c55e">
+    <link rel="apple-touch-icon" href="1.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
+        .drawer-up { transform: translateY(0) !important; }
+        .btn-active:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="bg-stone-50">
-    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50">
-        <h1 class="text-xl font-black text-green-600">GUAVA HUB</h1>
-        <p class="text-[10px] text-stone-400">芭樂汁團購</p>
+<body class="bg-stone-50 min-h-screen">
+
+    <nav class="bg-white p-4 border-b border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="space-y-1">
+                <h1 class="text-2xl font-black text-green-600 italic tracking-tighter">GUAVA HUB 🍹</h1>
+                <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 inline-flex items-center gap-2">
+                    <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
+                    <p class="text-xs text-green-800 font-bold">自由黃昏市場 排 號/日期/時間</p> 
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <main id="menu" class="p-4 space-y-4 max-w-md mx-auto">
-        </main>
+    <main class="max-w-4xl mx-auto p-4 pb-48">
+        
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
+                <div class="flex-1 space-y-3">
+                    <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨機鮮榨．渣汁分離
+                    </h2>
+                    <p class="text-sm text-stone-600 leading-relaxed">
+                        本芭樂汁採用慢磨技術，<span class="text-green-600 font-bold">渣與汁完全分離</span>，保留最高營養價值。與一般加水加糖的果汁攤不同，我們堅持<span class="font-bold">無糖、無水、原汁原味</span>。
+                    </p>
+                    <div class="bg-stone-100 p-4 rounded-2xl text-xs space-y-1 text-stone-700">
+                        <p>💡 若覺太甜：飲用前可加適量水調整</p>
+                        <p>✨ 進階吃法：加入甘梅粉更具風味！</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-stone-900 text-white p-5 rounded-3xl shadow-2xl flex justify-between items-center z-50 translate-y-32 transition-transform duration-500">
-        <div>
-            <p id="item-count" class="text-xs opacity-50">0 份餐點</p>
-            <p class="text-2xl font-black text-green-400">$<span id="total-price">0</span></p>
+        <div id="menu" class="space-y-4">
+            </div>
+    </main>
+
+    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-all duration-500 border border-white/10">
+        <div class="pl-2">
+            <p id="item-count" class="text-[10px] opacity-50 font-bold tracking-widest uppercase">已選擇商品</p>
+            <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
         </div>
-        <button onclick="openDrawer()" class="bg-green-500 text-black px-8 py-3 rounded-2xl font-black">結帳</button>
+        <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">
+            結帳去
+        </button>
     </div>
 
-    <div id="overlay" class="fixed inset-0 bg-black/50 z-[60] hidden" onclick="closeDrawer()"></div>
-    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[2rem] z-[70] translate-y-full transition-transform duration-300">
-        <h2 class="text-2xl font-black mb-4 text-stone-800">確認訂單</h2>
-        <div id="summary-list" class="space-y-2 mb-6 border-b pb-4"></div>
-        <input type="text" id="user-name" placeholder="輸入你的名字" class="w-full bg-stone-100 p-4 rounded-xl mb-4 font-bold outline-none ring-2 ring-stone-200 focus:ring-green-500">
-        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 py-5 rounded-2xl font-black text-lg shadow-lg">發送訂單 🚀</button>
+    <button onclick="checkAdmin()" class="fixed bottom-32 right-6 w-14 h-14 bg-white border-2 border-green-500 rounded-full shadow-xl flex items-center justify-center z-40 btn-active transition-all">
+        <div class="text-center">
+            <p class="text-[10px] font-bold text-green-600 leading-none">管理</p>
+            <span class="text-lg">⚙️</span>
+        </div>
+    </button>
+
+    <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 border-t border-stone-100 max-w-2xl mx-auto">
+        <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
+        <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
+        <div id="summary-list" class="space-y-4 mb-8"></div>
+        <input type="text" id="user-name" placeholder="請輸入姓名 (取貨用)" class="w-full bg-stone-100 p-5 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-green-500 mb-4">
+        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">
+            送出訂單 🚀
+        </button>
     </div>
 
     <script>
-        // Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
@@ -47,14 +94,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 🎉 商品資料：將 emoji 換成你的 .png 圖片檔名
-        // 依照順序：大瓶配5.png，小瓶配2.png，派對配4.png
+        // 🛍️ 商品設定：加入 promo (優惠價)
         const products = [
-            { id: 'p1', name: '經典芭樂汁 (大瓶)', price: 70, img: '5.png' }, 
-            { id: 'p1', name: '經典芭樂汁二瓶優惠 (大瓶)', price:120, img: '5.png' }, 
-            { id: 'p2', name: '經典芭樂汁 (小瓶)', price: 60, img: '2.png' },
-            { id: 'p2', name: '經典芭樂汁二瓶優惠 (小瓶)', price: 100, img: '2.png' },
-            ];
+            { id: 'big', name: '經典芭樂汁 (大瓶)', price: 70, promo: 120, img: '5.png' },
+            { id: 'small', name: '經典芭樂汁 (小瓶)', price: 60, promo: 100, img: '2.png' },
+            { id: 'party', name: '芭樂檸檬派對', price: 65, promo: 110, img: '4.png' }
+        ];
 
         let cart = {};
 
@@ -63,40 +108,46 @@
             menu.innerHTML = '';
             products.forEach(p => {
                 menu.innerHTML += `
-                    <div class="bg-white p-5 rounded-3xl flex items-center justify-between shadow-sm border border-stone-100 transition-all active:scale-[0.98]">
+                    <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100">
                         <div class="flex items-center gap-4">
-                            <img src="${p.img}" class="w-16 h-16 rounded-2xl object-cover shadow-inner border border-stone-100" alt="${p.name}">
+                            <img src="${p.img}" class="w-20 h-20 rounded-[2rem] object-cover" alt="${p.name}">
                             <div>
                                 <h3 class="font-bold text-stone-800 text-lg">${p.name}</h3>
                                 <p class="text-green-600 font-black text-xl leading-none mt-1">$${p.price}</p>
+                                <p class="text-[10px] text-stone-400 font-bold mt-1 tracking-tight">2瓶合購價 $${p.promo}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="updateCart('${p.id}', -1)" class="w-9 h-9 rounded-full bg-stone-100 font-bold text-stone-400">-</button>
-                            <span id="qty-${p.id}" class="font-black w-4 text-center text-lg">0</span>
-                            <button onclick="updateCart('${p.id}', 1)" class="w-9 h-9 rounded-full bg-stone-100 font-bold text-green-600">+</button>
+                        <div class="flex items-center gap-4 bg-stone-50 p-1.5 rounded-full border border-stone-100">
+                            <button onclick="updateCart('${p.id}', -1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300 btn-active">-</button>
+                            <span id="qty-${p.id}" class="font-black w-5 text-center text-lg">0</span>
+                            <button onclick="updateCart('${p.id}', 1)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600 btn-active">+</button>
                         </div>
                     </div>`;
             });
         }
 
-        // ... updateCart, openDrawer, closeDrawer, sendOrder 函式保持不變 ...
+        // 🧮 核心邏輯：計算二瓶優惠
+        function getSubtotal(id, qty) {
+            const p = products.find(x => x.id === id);
+            const pairs = Math.floor(qty / 2);
+            const singles = qty % 2;
+            return (pairs * p.promo) + (singles * p.price);
+        }
+
         function updateCart(id, change) {
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
-            
             document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
-
+            
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
-                const p = products.find(x => x.id === pid);
-                total += p.price * cart[pid];
+                total += getSubtotal(pid, cart[pid]);
                 count += cart[pid];
             });
 
             document.getElementById('total-price').innerText = total;
-            document.getElementById('item-count').innerText = `${count} 份餐點`;
-            document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(120px)';
+            document.getElementById('item-count').innerText = `${count} ITEMS SELECTED`;
+            document.getElementById('checkout-bar').style.transform = count > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(160px)';
         }
 
         function openDrawer() {
@@ -104,24 +155,35 @@
             list.innerHTML = '';
             Object.keys(cart).forEach(id => {
                 const p = products.find(x => x.id === id);
-                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
+                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl">
+                    <span>${p.name} x${cart[id]}</span>
+                    <span>$${getSubtotal(id, cart[id])}</span>
+                </div>`;
             });
             document.getElementById('overlay').classList.remove('hidden');
-            document.getElementById('drawer').style.transform = 'translateY(0)';
+            setTimeout(() => {
+                document.getElementById('overlay').style.opacity = '1';
+                document.getElementById('drawer').classList.add('drawer-up');
+            }, 10);
         }
 
         function closeDrawer() {
-            document.getElementById('overlay').classList.add('hidden');
-            document.getElementById('drawer').style.transform = 'translateY(100%)';
+            document.getElementById('overlay').style.opacity = '0';
+            document.getElementById('drawer').classList.remove('drawer-up');
+            setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
+        }
+
+        function checkAdmin() {
+            const pw = prompt("請輸入管理密碼：");
+            if (pw === "0000") { sessionStorage.setItem("adminAuth", "true"); window.location.href = "後台.html"; }
+            else if (pw !== null) alert("密碼錯誤！");
         }
 
         function sendOrder() {
             const name = document.getElementById('user-name').value;
-            if(!name) return alert("請輸入你的名字唷！");
-            
+            if(!name) return alert("請輸入姓名！");
             const btn = document.getElementById('send-btn');
-            btn.innerText = "傳送中...";
-            btn.disabled = true;
+            btn.innerText = "傳送中..."; btn.disabled = true;
 
             const detail = Object.keys(cart).map(id => {
                 const p = products.find(x => x.id === id);
@@ -129,18 +191,11 @@
             }).join(', ');
 
             db.ref('orders').push({
-                customer: name,
-                items: detail,
-                total: document.getElementById('total-price').innerText,
-                time: Date.now()
-            }).then(() => {
-                alert("🎉 下單成功！請至櫃台領取芭樂汁。");
-                location.reload();
-            });
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
+            }).then(() => { alert("🎉 下單成功！"); location.reload(); });
         }
 
         render();
     </script>
 </body>
 </html>
-
