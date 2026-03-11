@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收銀統計｜GUAVA HUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen pb-10">
+
+    <nav class="bg-white p-6 border-b border-stone-200 shadow-sm sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black text-stone-800">💰 收銀帳目統計</h1>
+            <a href="index.html" class="text-sm font-bold text-green-600">回首頁</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-green-600 text-white p-6 rounded-[2rem] shadow-lg">
+                <p class="text-xs font-bold opacity-80 uppercase tracking-widest">今日收入</p>
+                <h2 class="text-4xl font-black mt-2">$<span id="day-total">0</span></h2>
+            </div>
+            <div class="bg-blue-600 text-white p-6 rounded-[2rem] shadow-lg">
+                <p class="text-xs font-bold opacity-80 uppercase tracking-widest">本週收入</p>
+                <h2 class="text-4xl font-black mt-2">$<span id="week-total">0</span></h2>
+            </div>
+            <div class="bg-stone-800 text-white p-6 rounded-[2rem] shadow-lg">
+                <p class="text-xs font-bold opacity-80 uppercase tracking-widest">全部收入 (累計)</p>
+                <h2 class="text-4xl font-black mt-2">$<span id="all-total">0</span></h2>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] shadow-sm border border-stone-100 overflow-hidden">
+            <div class="p-6 border-b border-stone-100 flex justify-between items-center">
+                <h3 class="font-bold text-lg">訂單明細</h3>
+                <span class="text-xs bg-stone-100 px-3 py-1 rounded-full text-stone-500 font-bold" id="order-count">0 筆訂單</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-stone-50 text-stone-400 text-xs uppercase">
+                        <tr>
+                            <th class="p-4 font-bold">時間</th>
+                            <th class="p-4 font-bold">客戶</th>
+                            <th class="p-4 font-bold">品項</th>
+                            <th class="p-4 font-bold text-right">金額</th>
+                        </tr>
+                    </thead>
+                    <tbody id="order-rows" class="text-sm divide-y divide-stone-50">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 安全檢查
+        if (sessionStorage.getItem("adminAuth") !== "true") {
+            const pw = prompt("請輸入管理密碼以查看收銀資料：");
+            if (pw === "0000") {
+                sessionStorage.setItem("adminAuth", "true");
+            } else {
+                alert("權限不足");
+                window.location.href = "index.html";
+            }
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
+            databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
+            projectId: "studio-2370518507-ee5e3",
+            appId: "1:960169055224:web:7db7942ca9876fbdbf3c0d"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function loadFinances() {
+            db.ref('orders').on('value', snapshot => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                const orders = Object.values(data).sort((a, b) => b.time - a.time);
+                
+                let dayTotal = 0;
+                let weekTotal = 0;
+                let allTotal = 0;
+
+                const now = new Date();
+                const todayStr = now.toDateString();
+                
+                // 計算本週一的開始時間
+                const dayOfWeek = now.getDay(); // 0(日) - 6(六)
+                const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                const startOfWeek = new Date(now.setDate(diff));
+                startOfWeek.setHours(0,0,0,0);
+
+                const rows = document.getElementById('order-rows');
+                rows.innerHTML = '';
+
+                orders.forEach(order => {
+                    const orderDate = new Date(order.time);
+                    const amount = parseInt(order.total) || 0;
+
+                    // 全部收入
+                    allTotal += amount;
+
+                    // 今日收入
+                    if (orderDate.toDateString() === todayStr) {
+                        dayTotal += amount;
+                    }
+
+                    // 本週收入
+                    if (orderDate >= startOfWeek) {
+                        weekTotal += amount;
+                    }
+
+                    // 渲染表格
+                    rows.innerHTML += `
+                        <tr class="hover:bg-stone-50 transition-colors">
+                            <td class="p-4 text-stone-500 text-xs">${orderDate.toLocaleString()}</td>
+                            <td class="p-4 font-bold text-stone-800">${order.customer}</td>
+                            <td class="p-4 text-stone-600">${order.items}</td>
+                            <td class="p-4 text-right font-black text-green-600">$${amount}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('day-total').innerText = dayTotal.toLocaleString();
+                document.getElementById('week-total').innerText = weekTotal.toLocaleString();
+                document.getElementById('all-total').innerText = allTotal.toLocaleString();
+                document.getElementById('order-count').innerText = `${orders.length} 筆訂單`;
+            });
+        }
+
+        loadFinances();
+    </script>
+</body>
+</html>
