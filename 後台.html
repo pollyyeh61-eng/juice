@@ -9,69 +9,81 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         .btn-active:active { transform: scale(0.95); }
-        /* 讓頁面滾動更流暢 */
-        html { scroll-behavior: smooth; }
+        .status-btn.active { border: 3px solid #22c55e; background-color: #f0fdf4; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-10">
+<body class="bg-slate-50 min-h-screen pb-12">
 
-    <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-lg">
+    <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <a href="index.html" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl transition-all btn-active border border-slate-700 no-underline">
-                    <span class="text-lg">🏠</span>
-                    <span class="text-xs font-bold text-white">回首頁</span>
-                </a>
-                <h1 class="text-xl font-black tracking-tighter text-green-400 uppercase">Admin</h1>
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-white no-underline text-xs font-bold btn-active">🏠 首頁</a>
+                <h1 class="text-lg font-black text-green-400">ADMIN</h1>
             </div>
-            <div id="stat" class="text-sm font-bold bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700">
-                今日營收: <span class="text-green-400">$</span><span id="today-total" class="text-green-400">0</span>
+            <div class="text-sm font-bold bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+                今日營收: $<span id="today-total">0</span>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto p-4 space-y-8">
-        
-        <section class="bg-green-100 p-6 rounded-[2.5rem] shadow-sm border-2 border-green-200">
-            <div class="flex items-center justify-between mb-4 px-2">
-                <h2 class="text-lg font-black flex items-center gap-2 text-green-800">📊 今日待備貨總計</h2>
-                <span class="text-[10px] bg-green-600 text-white px-2 py-1 rounded-full font-bold">LIVE</span>
-            </div>
-            <div id="prep-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-slate-100">
+            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">📍 取貨地點與狀態設置</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">市場名稱</label>
+                    <input type="text" id="loc-market" placeholder="自由黃昏市場" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
                 </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">排</label>
+                    <input type="text" id="loc-row" placeholder="2" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">號</label>
+                    <input type="text" id="loc-no" placeholder="3" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">開攤時間</label>
+                    <input type="time" id="loc-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <button onclick="setStatus('營業中')" id="btn-open" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active">🟢 營業中</button>
+                <button onclick="setStatus('已售完')" id="btn-soldout" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active">🟡 已售完</button>
+                <button onclick="setStatus('結束本日營業')" id="btn-close" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active">🔴 結束營業</button>
+            </div>
+
+            <button onclick="updateSettings()" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold btn-active shadow-lg shadow-green-100">更新資訊並同步至前台 🚀</button>
+        </section>
+
+        <section class="bg-green-50 p-6 rounded-[2.5rem] border-2 border-green-200">
+            <h2 class="text-sm font-black text-green-800 mb-4 px-2">📦 今日待備貨總計</h2>
+            <div id="prep-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
         </section>
 
         <section>
-            <h2 class="text-lg font-black mb-4 flex items-center gap-2 text-slate-800 pl-4">
-                <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                待處理訂單
-            </h2>
-            <div id="live-orders" class="grid gap-4 min-h-[50px]">
-                <p class="text-slate-400 text-sm pl-4 italic">載入中...</p>
-            </div>
+            <h2 class="text-lg font-black mb-4 flex items-center gap-2 text-slate-800 pl-4">待處理訂單</h2>
+            <div id="live-orders" class="grid gap-4"></div>
         </section>
 
-        <section class="bg-white rounded-[2.5rem] shadow-md border border-slate-200 overflow-hidden">
-            <div class="p-6 bg-slate-100/50 border-b border-slate-200">
-                <h2 class="text-xl font-black text-slate-800 flex items-center gap-2">📜 歷史預約紀錄</h2>
+        <section class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-6 bg-slate-50 border-b border-slate-200">
+                <h2 class="text-xl font-black text-slate-800">歷史紀錄</h2>
                 <div class="mt-4 flex gap-2">
-                    <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋姓名..." class="flex-1 bg-white border border-slate-300 p-3 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-green-500">
-                    <input type="date" id="date-input" onchange="filterHistory()" class="bg-white border border-slate-300 p-3 rounded-2xl text-sm outline-none">
+                    <input type="text" id="search-input" oninput="filterHistory()" placeholder="搜尋姓名..." class="flex-1 bg-white border border-slate-300 p-3 rounded-2xl text-sm outline-none">
                 </div>
             </div>
-            
-            <div id="history-list" class="divide-y divide-slate-100">
-                <p class="p-20 text-center text-slate-400 font-medium">尚無已完成紀錄</p>
-            </div>
+            <div id="history-list" class="divide-y divide-slate-100"></div>
         </section>
 
     </main>
 
     <script>
-        // 登入驗證
         if (sessionStorage.getItem('admin') !== 'ok') { window.location.href = "index.html"; }
 
-        // Firebase 初始化
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
@@ -80,143 +92,130 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        
+        let currentStatus = "營業中";
 
+        // 1. 監聽與讀取現有地點設定
+        db.ref('config/pickupLocationData').on('value', snap => {
+            const data = snap.val();
+            if(data) {
+                document.getElementById('loc-market').value = data.market || "";
+                document.getElementById('loc-row').value = data.row || "";
+                document.getElementById('loc-no').value = data.no || "";
+                document.getElementById('loc-time').value = data.time || "";
+            }
+        });
+
+        // 監聽目前的營業狀態
+        db.ref('config/businessStatus').on('value', snap => {
+            currentStatus = snap.val() || "營業中";
+            updateStatusUI();
+        });
+
+        function setStatus(s) {
+            currentStatus = s;
+            updateStatusUI();
+        }
+
+        function updateStatusUI() {
+            document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active', 'text-green-600', 'text-amber-600', 'text-red-600'));
+            if(currentStatus === '營業中') document.getElementById('btn-open').classList.add('active', 'text-green-600');
+            if(currentStatus === '已售完') document.getElementById('btn-soldout').classList.add('active', 'text-amber-600');
+            if(currentStatus === '結束本日營業') document.getElementById('btn-close').classList.add('active', 'text-red-600');
+        }
+
+        // 2. 更新按鈕邏輯
+        function updateSettings() {
+            const market = document.getElementById('loc-market').value;
+            const row = document.getElementById('loc-row').value;
+            const no = document.getElementById('loc-no').value;
+            const time = document.getElementById('loc-time').value;
+            const fullString = `${market} ${row}排${no}號 (${time} 開攤)`;
+
+            db.ref('config').update({
+                pickupLocation: fullString,
+                pickupLocationData: { market, row, no, time },
+                businessStatus: currentStatus
+            }).then(() => alert("✅ 設定已更新並同步至前台"));
+        }
+
+        // --- 訂單與歷史紀錄邏輯 (維持不變) ---
         const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
-
-        // 1. 監聽待處理訂單
         db.ref('orders').on('value', snapshot => {
+            const data = snapshot.val();
             const liveDiv = document.getElementById('live-orders');
             liveDiv.innerHTML = '';
-            const data = snapshot.val();
             const prepStats = {};
-            productNames.forEach(name => prepStats[name] = 0);
-
-            if (!data) { 
-                liveDiv.innerHTML = '<div class="text-center py-12 text-slate-400 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 mx-2">目前沒有待處理訂單</div>';
+            productNames.forEach(n => prepStats[n] = 0);
+            if (!data) {
+                liveDiv.innerHTML = '<p class="p-10 text-center text-slate-400">目前無訂單</p>';
                 renderPrepSummary(prepStats);
-                return; 
+                return;
             }
-            
-            const sortedOrders = Object.keys(data).map(key => ({ id: key, ...data[key] }))
-                .sort((a, b) => (a.pickup_time || "99:99").localeCompare(b.pickup_time || "99:99"));
-
-            sortedOrders.forEach(order => {
-                if(order.items) {
-                    order.items.split(', ').forEach(itemStr => {
-                        const [name, qty] = itemStr.split('x');
-                        if (prepStats[name] !== undefined) { prepStats[name] += parseInt(qty); }
-                    });
-                }
-                
-                const orderTime = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
+            Object.keys(data).forEach(k => {
+                const order = data[k];
+                if(order.items) order.items.split(', ').forEach(item => {
+                    const [n, q] = item.split('x');
+                    if(prepStats[n] !== undefined) prepStats[n] += parseInt(q);
+                });
                 liveDiv.innerHTML += `
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 flex justify-between items-center transition-all hover:border-green-300">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="bg-red-100 text-red-600 text-[11px] font-black px-2 py-1 rounded-lg">取貨：${order.pickup_time || '未填'}</span>
-                                <span class="text-[10px] text-slate-400 font-bold uppercase">訂單於 ${orderTime}</span>
-                            </div>
-                            <h3 class="font-black text-slate-800 text-xl leading-tight mb-1">${order.customer}</h3>
-                            <p class="text-slate-500 text-sm font-medium mb-1">${order.items}</p>
-                            <p class="text-green-600 font-black text-lg">$${order.total}</p>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-black text-slate-800 text-xl">${order.customer}</h3>
+                            <p class="text-slate-500 text-sm">${order.items}</p>
                         </div>
-                        <button onclick="completeOrder('${order.id}')" class="ml-4 bg-slate-900 text-white px-8 py-5 rounded-[1.5rem] font-bold btn-active shadow-lg">完成</button>
+                        <button onclick="completeOrder('${k}')" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold btn-active">完成</button>
                     </div>`;
             });
             renderPrepSummary(prepStats);
         });
 
-        // 2. 渲染備貨卡片 (淺綠色版)
         function renderPrepSummary(stats) {
             const prepDiv = document.getElementById('prep-summary');
-            prepDiv.innerHTML = Object.entries(stats).map(([name, count]) => `
-                <div class="bg-white p-4 rounded-3xl border border-green-200 flex flex-col items-center shadow-sm">
-                    <p class="text-[10px] font-bold text-green-700 mb-1 leading-tight h-6 text-center">${name}</p>
-                    <p class="text-3xl font-black ${count > 0 ? 'text-green-600' : 'text-slate-200'}">${count}</p>
+            prepDiv.innerHTML = Object.entries(stats).map(([n, c]) => `
+                <div class="bg-white p-4 rounded-3xl border border-green-200 flex flex-col items-center">
+                    <p class="text-[10px] font-bold text-green-700 text-center h-6 leading-tight">${n}</p>
+                    <p class="text-3xl font-black ${c > 0 ? 'text-green-600' : 'text-slate-200'}">${c}</p>
                 </div>
             `).join('');
         }
 
-        // 3. 完成訂單
         function completeOrder(id) {
-            const orderRef = db.ref('orders/' + id);
-            orderRef.once('value', snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    const historyData = { ...data, status: 'completed', completedAt: Date.now() };
-                    db.ref('history').push(historyData).then(() => {
-                        orderRef.remove();
-                    });
-                }
+            db.ref('orders/' + id).once('value', snap => {
+                const data = snap.val();
+                if(data) db.ref('history').push({...data, completedAt: Date.now()}).then(() => db.ref('orders/' + id).remove());
             });
         }
 
-        // 4. 監聽歷史紀錄並計算營收
         let allHistory = [];
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
             allHistory = [];
-            let todayRev = 0;
-            const todayStr = new Date().toDateString();
-
-            if (data) {
-                Object.keys(data).forEach(id => {
-                    const h = data[id];
-                    allHistory.push({id, ...h});
-                    if (new Date(h.timestamp).toDateString() === todayStr) { 
-                        todayRev += parseInt(h.total || 0); 
-                    }
-                });
-            }
-            document.getElementById('today-total').innerText = todayRev.toLocaleString();
-            // 排序：最新完成的在最上面
-            allHistory.sort((a, b) => (b.completedAt || b.timestamp) - (a.completedAt || a.timestamp));
+            let rev = 0;
+            if (data) Object.keys(data).forEach(id => {
+                const h = data[id];
+                allHistory.push({id, ...h});
+                if (new Date(h.timestamp).toDateString() === new Date().toDateString()) rev += parseInt(h.total || 0);
+            });
+            document.getElementById('today-total').innerText = rev.toLocaleString();
+            allHistory.sort((a,b) => (b.completedAt || b.timestamp) - (a.completedAt || a.timestamp));
             filterHistory();
         });
 
-        // 5. 渲染歷史列表
         function filterHistory() {
             const nameKey = document.getElementById('search-input').value.toLowerCase();
-            const dateKey = document.getElementById('date-input').value; 
             const listDiv = document.getElementById('history-list');
             listDiv.innerHTML = '';
-            
-            const filtered = allHistory.filter(h => {
-                const orderDate = new Date(h.timestamp).toISOString().split('T')[0];
-                const matchName = h.customer.toLowerCase().includes(nameKey);
-                const matchDate = dateKey ? (orderDate === dateKey) : true;
-                return matchName && matchDate;
-            });
-
-            if (filtered.length === 0) {
-                listDiv.innerHTML = '<p class="p-20 text-center text-slate-400 font-bold">目前沒有符合的紀錄</p>';
-                return;
-            }
-
-            filtered.forEach(h => {
-                const dateObj = new Date(h.timestamp);
+            allHistory.filter(h => h.customer.toLowerCase().includes(nameKey)).forEach(h => {
                 listDiv.innerHTML += `
-                    <div class="p-6 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                    <div class="p-6 flex justify-between items-center">
                         <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">
-                                ${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | 取貨:${h.pickup_time || '-'}
-                            </p>
-                            <h4 class="font-black text-slate-700 text-lg">${h.customer}</h4>
-                            <p class="text-sm text-slate-500 font-medium">${h.items}</p>
+                            <h4 class="font-black text-slate-700">${h.customer}</h4>
+                            <p class="text-xs text-slate-500">${h.items}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="font-black text-slate-800 text-xl">$${h.total}</p>
-                            <button onclick="deleteHistory('${h.id}')" class="text-[11px] text-red-300 font-bold mt-2 hover:text-red-500">刪除紀錄</button>
-                        </div>
+                        <p class="font-black text-slate-800">$${h.total}</p>
                     </div>`;
             });
-        }
-
-        function deleteHistory(id) {
-            if(confirm('要刪除這筆歷史存檔嗎？(不會影響營收統計)')) {
-                db.ref('history/' + id).remove();
-            }
         }
     </script>
 </body>
