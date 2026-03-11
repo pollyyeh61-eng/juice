@@ -13,7 +13,10 @@
     <nav class="bg-white p-6 border-b border-stone-200 shadow-sm sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-black text-stone-800">💰 收銀帳目統計</h1>
-            <a href="index.html" class="text-sm font-bold text-green-600">回首頁</a>
+            <div class="flex gap-4">
+                <a href="後台.html" class="text-sm font-bold text-slate-500">回後台</a>
+                <a href="index.html" class="text-sm font-bold text-green-600">回首頁</a>
+            </div>
         </div>
     </nav>
 
@@ -36,14 +39,14 @@
 
         <div class="bg-white rounded-[2rem] shadow-sm border border-stone-100 overflow-hidden">
             <div class="p-6 border-b border-stone-100 flex justify-between items-center">
-                <h3 class="font-bold text-lg">訂單明細</h3>
+                <h3 class="font-bold text-lg">已完成訂單明細</h3>
                 <span class="text-xs bg-stone-100 px-3 py-1 rounded-full text-stone-500 font-bold" id="order-count">0 筆訂單</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-stone-50 text-stone-400 text-xs uppercase">
                         <tr>
-                            <th class="p-4 font-bold">時間</th>
+                            <th class="p-4 font-bold">成交時間</th>
                             <th class="p-4 font-bold">客戶</th>
                             <th class="p-4 font-bold">品項</th>
                             <th class="p-4 font-bold text-right">金額</th>
@@ -78,11 +81,22 @@
         const db = firebase.database();
 
         function loadFinances() {
-            db.ref('orders').on('value', snapshot => {
+            // ✨ 關鍵修正：監聽 'history' 而不是 'orders'
+            db.ref('history').on('value', snapshot => {
                 const data = snapshot.val();
-                if (!data) return;
+                const rows = document.getElementById('order-rows');
+                
+                if (!data) {
+                    rows.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-stone-400">尚無成交紀錄</td></tr>';
+                    document.getElementById('day-total').innerText = "0";
+                    document.getElementById('week-total').innerText = "0";
+                    document.getElementById('all-total').innerText = "0";
+                    document.getElementById('order-count').innerText = "0 筆訂單";
+                    return;
+                }
 
-                const orders = Object.values(data).sort((a, b) => b.time - a.time);
+                // 轉為陣列並按時間排序（最新的在前）
+                const records = Object.values(data).sort((a, b) => b.time - a.time);
                 
                 let dayTotal = 0;
                 let weekTotal = 0;
@@ -92,46 +106,47 @@
                 const todayStr = now.toDateString();
                 
                 // 計算本週一的開始時間
-                const dayOfWeek = now.getDay(); // 0(日) - 6(六)
-                const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                const startOfWeek = new Date(now.setDate(diff));
+                const tempDate = new Date();
+                const dayOfWeek = tempDate.getDay(); 
+                const diff = tempDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                const startOfWeek = new Date(tempDate.setDate(diff));
                 startOfWeek.setHours(0,0,0,0);
 
-                const rows = document.getElementById('order-rows');
                 rows.innerHTML = '';
 
-                orders.forEach(order => {
-                    const orderDate = new Date(order.time);
-                    const amount = parseInt(order.total) || 0;
+                records.forEach(record => {
+                    const recordDate = new Date(record.time);
+                    const amount = parseInt(record.total) || 0;
 
-                    // 全部收入
+                    // 1. 全部收入
                     allTotal += amount;
 
-                    // 今日收入
-                    if (orderDate.toDateString() === todayStr) {
+                    // 2. 今日收入
+                    if (recordDate.toDateString() === todayStr) {
                         dayTotal += amount;
                     }
 
-                    // 本週收入
-                    if (orderDate >= startOfWeek) {
+                    // 3. 本週收入
+                    if (recordDate >= startOfWeek) {
                         weekTotal += amount;
                     }
 
                     // 渲染表格
                     rows.innerHTML += `
                         <tr class="hover:bg-stone-50 transition-colors">
-                            <td class="p-4 text-stone-500 text-xs">${orderDate.toLocaleString()}</td>
-                            <td class="p-4 font-bold text-stone-800">${order.customer}</td>
-                            <td class="p-4 text-stone-600">${order.items}</td>
+                            <td class="p-4 text-stone-500 text-xs">${recordDate.toLocaleString()}</td>
+                            <td class="p-4 font-bold text-stone-800">${record.customer}</td>
+                            <td class="p-4 text-stone-600">${record.items}</td>
                             <td class="p-4 text-right font-black text-green-600">$${amount}</td>
                         </tr>
                     `;
                 });
 
+                // 更新顯示數值
                 document.getElementById('day-total').innerText = dayTotal.toLocaleString();
                 document.getElementById('week-total').innerText = weekTotal.toLocaleString();
                 document.getElementById('all-total').innerText = allTotal.toLocaleString();
-                document.getElementById('order-count').innerText = `${orders.length} 筆訂單`;
+                document.getElementById('order-count').innerText = `${records.length} 筆訂單`;
             });
         }
 
