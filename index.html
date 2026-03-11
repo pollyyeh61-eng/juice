@@ -43,12 +43,23 @@
             <div class="flex flex-col md:flex-row items-center gap-6">
                 <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
                 <div class="flex-1 space-y-4">
-                    <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
-                        <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
-                    </h2>
-                    <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
-                        堅持採用慢磨技術，無糖、無水、無添加，體驗大自然真實鮮甜。
-                    </p>
+                    <div>
+                        <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
+                            <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
+                        </h2>
+                        <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
+                            我們堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離技術，雖然費時，但能完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾<span class="font-bold text-green-600">無糖、無水、無添加</span>，讓您每一口都能喝到產地直送的真實鮮甜。
+                        </p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
+                        <p class="text-[11px] font-bold text-green-600 uppercase mb-2">💡 建議喝法</p>
+                        <ul class="text-xs text-stone-700 space-y-1.5 font-bold">
+                            <li>1. 喝原味（感受慢磨鮮榨的純粹）</li>
+                            <li>2. 加檸檬汁（清爽果香層次倍增）</li>
+                            <li>3. 加甘梅粉（經典風味回甘無窮）</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
@@ -110,24 +121,21 @@
     </div>
 
     <script>
-        // --- 真正的瀏覽器安裝偵測設計 ---
+        // PWA 安裝偵測：核心邏輯
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); // 攔截預設行為
-            deferredPrompt = e;  // 儲存事件，等待用戶點擊按鈕
-            console.log("瀏覽器已準備好安裝偵測");
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log("PWA偵測成功：已備妥安裝指令");
         });
 
         async function triggerPWAInstall() {
             if (deferredPrompt) {
-                deferredPrompt.prompt(); // 觸發瀏覽器系統安裝視窗
+                deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('User accepted the PWA install');
-                }
                 deferredPrompt = null;
             } else {
-                // 若環境不支援（如 iOS Safari），則顯示備案提示
+                // 針對 iOS 或已安裝環境的彈窗指示
                 alert("點擊分享圖示 ➔ 加入主畫面");
             }
         }
