@@ -105,6 +105,8 @@
         
         <p class="text-xs font-bold text-stone-400 mb-2 uppercase ml-1">自選取貨時段</p>
         <select id="pickup-time" class="w-full bg-red-50 text-red-600 p-5 rounded-2xl font-bold mb-4 text-lg outline-none border border-red-100 appearance-none">
+            <option value="14:00">14:00</option>
+            <option value="14:30">14:30</option>
             <option value="15:00">15:00</option>
             <option value="15:30">15:30</option>
             <option value="16:00">16:00</option>
@@ -210,7 +212,7 @@
                 createdAt: Date.now()
             }).then(() => { 
                 closeDrawer();
-                document.getElementById('display-name').innerText = name + " 同學";
+                document.getElementById('display-name').innerText = name + " 先生/女士";
                 document.getElementById('display-time').innerText = selectedTime; // 顯示自選時間
                 document.getElementById('display-location').innerText = locStr;
                 document.getElementById('order-success-info').classList.remove('hidden');
@@ -233,3 +235,4 @@
     </script>
 </body>
 </html>
+
