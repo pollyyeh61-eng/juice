@@ -71,6 +71,8 @@
                     <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
                         <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">自選取貨時段</p>
                         <select id="pickup-time-select" class="bg-transparent text-base font-black text-red-600 outline-none w-full cursor-pointer">
+                            <option>14:00</option>
+                            <option>14:30</option>
                             <option>15:00</option>
                             <option>15:30</option>
                             <option>16:00</option>
@@ -107,29 +109,21 @@
     </div>
 
     <script>
-        // PWA 下載邏輯優化：實現真正的「直接下載/安裝」功能
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            console.log('PWA Install Prompt Ready');
         });
 
         async function presentInstallPrompt() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                }
                 deferredPrompt = null;
             } else {
-                // 如果瀏覽器尚未準備好，才顯示備案
                 alert("點擊瀏覽器選單中的「安裝應用程式」或「加入主畫面」即可完成下載");
             }
         }
 
-        // Firebase 與商品設定
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
