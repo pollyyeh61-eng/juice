@@ -17,7 +17,6 @@
         .sync-glow { animation: sync-pulse 2s infinite; }
         #history-drawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* 新增：當時間被客戶修改時的提醒動畫 */
         @keyframes time-change-blink {
             0% { background-color: transparent; }
             50% { background-color: #fef3c7; }
@@ -83,13 +82,13 @@
             </div>
         </section>
 
-        <section class="bg-slate-900 p-6 rounded-[2rem] shadow-xl text-white">
+        <section class="bg-green-50 p-6 rounded-[2rem] shadow-md border-2 border-green-200 text-slate-800">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-black flex items-center gap-2">📊 今日待備貨總計</h2>
-                <span class="text-[10px] border border-white/30 px-2 py-1 rounded font-bold text-white/50">待處理匯總</span>
+                <h2 class="text-lg font-black flex items-center gap-2 text-green-700">📊 今日待備貨總計</h2>
+                <span class="text-[10px] bg-green-200/50 border border-green-300 px-2 py-1 rounded font-bold text-green-700">待處理匯總</span>
             </div>
             <div id="prep-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="text-center p-3 bg-white/10 rounded-2xl border border-white/10 text-xs">載入中...</div>
+                <div class="text-center p-3 bg-white/60 rounded-2xl border border-green-100 text-xs text-green-400">載入中...</div>
             </div>
         </section>
 
@@ -143,7 +142,6 @@
 
         const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
 
-        // 監聽待處理訂單
         db.ref('orders').on('value', snapshot => {
             const liveDiv = document.getElementById('live-orders');
             liveDiv.innerHTML = '';
@@ -157,7 +155,6 @@
                 return; 
             }
             
-            // 將訂單轉為陣列並按取貨時間排序，方便老闆看順序
             const sortedOrders = Object.keys(data).map(key => ({ id: key, ...data[key] }))
                 .sort((a, b) => (a.pickup_time || "99:99").localeCompare(b.pickup_time || "99:99"));
 
@@ -188,12 +185,13 @@
             renderPrepSummary(prepStats);
         });
 
+        // 修改點：更新 renderPrepSummary 內部生成的 HTML 樣式以配合同色系
         function renderPrepSummary(stats) {
             const prepDiv = document.getElementById('prep-summary');
             prepDiv.innerHTML = Object.entries(stats).map(([name, count]) => `
-                <div class="bg-white/10 p-3 rounded-2xl border border-white/10 flex flex-col items-center">
-                    <p class="text-[9px] font-bold text-white/50 mb-1 leading-tight h-6 text-center">${name}</p>
-                    <p class="text-2xl font-black ${count > 0 ? 'text-green-400' : 'text-white/20'}">${count}</p>
+                <div class="bg-white/80 p-3 rounded-2xl border border-green-100 flex flex-col items-center shadow-sm">
+                    <p class="text-[9px] font-bold text-green-600 mb-1 leading-tight h-6 text-center">${name}</p>
+                    <p class="text-2xl font-black ${count > 0 ? 'text-green-500' : 'text-slate-300'}">${count}</p>
                 </div>
             `).join('');
         }
@@ -211,7 +209,6 @@
             });
         }
 
-        // 歷史紀錄與營收統計邏輯
         let allHistory = [];
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
@@ -283,7 +280,6 @@
             }
         }
 
-        // 地點與狀態設定
         db.ref('config/pickupLocationData').on('value', snap => {
             const data = snap.val();
             if(data) {
