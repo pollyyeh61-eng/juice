@@ -26,7 +26,7 @@
                 <h1 class="text-2xl font-black text-green-600 italic tracking-tighter leading-none">GUAVA HUB 🍹</h1>
                 <div class="bg-green-50 px-3 py-1 rounded-full border border-green-100 flex items-center gap-2">
                     <span class="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">本日取貨點</span>
-                    <p id="current-location" class="text-xs text-green-800 font-bold">自由黃昏市場 2排94號 (02:00 開攤)</p> 
+                    <p id="current-location" class="text-xs text-green-800 font-bold">載入中...</p> 
                 </div>
             </div>
 
@@ -49,17 +49,8 @@
                             <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
                         </h2>
                         <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
-                            我們堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離技術，雖然費時，但能完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾<span class="font-bold text-green-600">無糖、無水、無添加</span>，讓您每一口都能喝到產地直送的真實鮮甜。
+                            我們堅持採用慢磨機果渣分離技術，完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾無糖、無水、無添加。
                         </p>
-                    </div>
-                    
-                    <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
-                        <p class="text-[11px] font-bold text-green-600 uppercase mb-2">💡 建議喝法</p>
-                        <ul class="text-xs text-stone-700 space-y-1.5 font-bold">
-                            <li>1. 喝原味（感受慢磨鮮榨的純粹）</li>
-                            <li>2. 加檸檬汁（清爽果香層次倍增）</li>
-                            <li>3. 加甘梅粉（經典風味回甘無窮）</li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -74,13 +65,22 @@
                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">✅</div>
                     <div>
                         <h3 class="font-black text-stone-800 text-sm uppercase tracking-wider">預約成功！<span id="display-name" class="text-green-600"></span></h3>
-                        <p class="text-[11px] text-stone-400 font-bold">請向現場人員出示此畫面領取</p>
+                        <p class="text-[11px] text-stone-400 font-bold">如需更改時間，請在下方調整</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
-                        <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">預約取貨時段</p>
-                        <p id="display-time" class="text-base font-black text-red-600">--:--</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100 flex flex-col items-center justify-center">
+                        <p class="text-[10px] font-bold text-red-500 mb-2 uppercase">調整取貨時段</p>
+                        <div class="flex items-center gap-2">
+                            <select id="edit-pickup-time" onchange="updateLiveTime()" class="bg-white px-3 py-2 rounded-xl font-black text-red-600 border border-red-200 outline-none text-lg">
+                                <option>14:00</option><option>14:30</option>
+                                <option>15:00</option><option>15:30</option>
+                                <option>16:00</option><option>16:30</option>
+                                <option>17:00</option><option>17:30</option>
+                                <option>18:00</option>
+                            </select>
+                            <button id="update-time-btn" onclick="submitTimeChange()" class="bg-red-500 text-white text-xs px-3 py-2 rounded-xl font-bold btn-active hidden">更新</button>
+                        </div>
                     </div>
                     <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
                         <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取地點</p>
@@ -107,7 +107,7 @@
         <div class="space-y-3 mb-8">
             <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-5 rounded-2xl font-bold text-lg outline-none focus:ring-2 focus:ring-green-500">
             <div class="bg-red-50 p-4 rounded-2xl border border-red-100 flex items-center justify-between">
-                <span class="font-bold text-red-600 pl-2">取貨時段</span>
+                <span class="font-bold text-red-600 pl-2">預計取貨</span>
                 <select id="user-pickup-time" class="bg-white px-4 py-2 rounded-xl font-black text-red-600 border border-red-200 outline-none">
                     <option>14:00</option><option>14:30</option>
                     <option>15:00</option><option>15:30</option>
@@ -121,41 +121,6 @@
     </div>
 
     <script>
-        // PWA 下載邏輯
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-        });
-
-        async function triggerPWAInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt = null;
-            } else {
-                alert("點擊分享圖示 ➔ 加入主畫面");
-            }
-        }
-
-        // --- 新增：分享 APP 邏輯 ---
-        async function shareApp() {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'GUAVA HUB 芭樂汁團購',
-                        text: '這家的慢磨鮮榨芭樂汁超好喝！純天然無添加，快來一起訂～',
-                        url: window.location.href,
-                    });
-                } catch (err) {
-                    console.log('Share failed:', err);
-                }
-            } else {
-                // 不支援 API 的備選方案（如電腦端）
-                navigator.clipboard.writeText(window.location.href);
-                alert('已將網址複製到剪貼簿，快分享給好友吧！');
-            }
-        }
-
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
@@ -175,27 +140,88 @@
         let cart = {};
 
         window.onload = () => {
-            const savedOrder = localStorage.getItem('lastOrder');
-            if (savedOrder) {
-                const data = JSON.parse(savedOrder);
-                showSuccessCard(data.name, data.time, data.location);
+            const savedOrderId = localStorage.getItem('lastOrderId');
+            if (savedOrderId) {
+                checkOrderExists(savedOrderId);
             }
+            // 監聽取貨點變動
+            db.ref('config/pickupLocation').on('value', snap => {
+                document.getElementById('current-location').innerText = snap.val() || "店面取貨";
+            });
         };
+
+        // 檢查訂單是否存在於待處理列表
+        function checkOrderExists(orderId) {
+            db.ref('orders/' + orderId).on('value', snap => {
+                const data = snap.val();
+                if (data) {
+                    showSuccessCard(data.customer, data.pickup_time, document.getElementById('current-location').innerText);
+                    document.getElementById('edit-pickup-time').value = data.pickup_time;
+                } else {
+                    // 訂單已完成或被刪除
+                    document.getElementById('order-success-info').classList.add('hidden');
+                }
+            });
+        }
 
         function showSuccessCard(name, time, location) {
             document.getElementById('display-name').innerText = name;
-            document.getElementById('display-time').innerText = time;
-            document.getElementById('display-location').innerText = location;
+            document.getElementById('display-location').innerText = location.split('(')[0];
             document.getElementById('order-success-info').classList.remove('hidden');
         }
 
+        // 修改時間時顯示「更新」按鈕
+        function updateLiveTime() {
+            document.getElementById('update-time-btn').classList.remove('hidden');
+        }
+
+        // 提交時間變更
+        function submitTimeChange() {
+            const orderId = localStorage.getItem('lastOrderId');
+            const newTime = document.getElementById('edit-pickup-time').value;
+            if (!orderId) return;
+
+            db.ref('orders/' + orderId).update({ pickup_time: newTime }).then(() => {
+                alert("✅ 時間已更新！老闆會為您重新安排。");
+                document.getElementById('update-time-btn').classList.add('hidden');
+            }).catch(e => alert("更新失敗，請重新整理頁面"));
+        }
+
         function clearOrderMemory() {
-            if(confirm("確定要清除手機上的預約紀錄嗎？")) {
-                localStorage.removeItem('lastOrder');
+            if(confirm("確定要清除手機上的預約紀錄嗎？(這不會取消已送出的訂單)")) {
+                localStorage.removeItem('lastOrderId');
                 document.getElementById('order-success-info').classList.add('hidden');
             }
         }
 
+        // --- 核心送出邏輯 (紀錄 ID) ---
+        function sendOrder() {
+            const name = document.getElementById('user-name').value;
+            const time = document.getElementById('user-pickup-time').value;
+            if(!name) return alert("請輸入姓名！");
+            
+            const btn = document.getElementById('send-btn');
+            btn.innerText = "傳送預約中..."; btn.disabled = true;
+
+            const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
+            
+            const newOrderRef = db.ref('orders').push();
+            newOrderRef.set({
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, 
+                pickup_time: time, status: 'pending', timestamp: Date.now()
+            }).then(() => { 
+                localStorage.setItem('lastOrderId', newOrderRef.key); // 重要：儲存產生的 ID
+                closeDrawer();
+                checkOrderExists(newOrderRef.key); // 開始監聽這筆新訂單
+                cart = {}; render();
+                document.getElementById('total-price').innerText = "0";
+                document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
+                btn.innerText = "送出預約 🚀"; btn.disabled = false;
+                setTimeout(() => document.getElementById('order-success-info').scrollIntoView({ behavior: 'smooth' }), 500);
+            });
+        }
+
+        // 原有渲染、購物車與 PWA 邏輯 ...
         function render() {
             const menu = document.getElementById('menu');
             menu.innerHTML = '';
@@ -247,29 +273,6 @@
             document.getElementById('overlay').style.opacity = '0';
             document.getElementById('drawer').classList.remove('drawer-up');
             setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
-        }
-
-        function sendOrder() {
-            const name = document.getElementById('user-name').value;
-            const time = document.getElementById('user-pickup-time').value;
-            if(!name) return alert("請輸入姓名！");
-            const btn = document.getElementById('send-btn');
-            btn.innerText = "傳送預約中..."; btn.disabled = true;
-            const locStr = document.getElementById('current-location').innerText.split('(')[0].trim();
-            const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
-
-            db.ref('orders').push({
-                customer: name, items: detail, total: document.getElementById('total-price').innerText, pickup_time: time, status: 'pending', timestamp: Date.now()
-            }).then(() => { 
-                localStorage.setItem('lastOrder', JSON.stringify({ name: name, time: time, location: locStr }));
-                closeDrawer();
-                showSuccessCard(name, time, locStr);
-                cart = {}; render();
-                document.getElementById('total-price').innerText = "0";
-                document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
-                btn.innerText = "送出預約 🚀"; btn.disabled = false;
-                setTimeout(() => document.getElementById('order-success-info').scrollIntoView({ behavior: 'smooth' }), 500);
-            });
         }
 
         function checkAuth(url) {
