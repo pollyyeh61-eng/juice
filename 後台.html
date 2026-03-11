@@ -102,8 +102,8 @@
     </main>
 
     <script>
-        // 權限檢查
-        if (sessionStorage.getItem("adminAuth") !== "true") { window.location.href = "index.html"; }
+        // 確保 Session 檢查
+        if (sessionStorage.getItem('admin') !== 'ok') { window.location.href = "index.html"; }
 
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
@@ -138,7 +138,7 @@
             }).then(() => alert("✅ 地點同步成功！"));
         }
 
-        // --- 狀態功能 ---
+        // --- 狀態切換 ---
         db.ref('config/shopStatus').on('value', snap => {
             const status = snap.val() || 'open';
             const btns = { open: document.getElementById('btn-status-open'), soldout: document.getElementById('btn-status-soldout'), closed: document.getElementById('btn-status-closed') };
@@ -149,20 +149,22 @@
         });
         function setStatus(s) { db.ref('config').update({ shopStatus: s }); }
 
-        // --- 訂單與歷史功能 (保持不變) ---
+        // --- 核心功能：訂單讀取 ---
         let allHistory = [];
         db.ref('orders').on('value', snapshot => {
             const liveDiv = document.getElementById('live-orders');
             liveDiv.innerHTML = '';
             const data = snapshot.val();
             if (!data) { liveDiv.innerHTML = '<div class="text-center py-10 text-slate-400 bg-white rounded-3xl border-2 border-dashed border-slate-100">目前沒有新訂單</div>'; return; }
+            
             Object.keys(data).forEach(id => {
                 const order = data[id];
-                const time = new Date(order.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                // 這裡將時間戳轉為讀得懂的時間
+                const orderTime = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 liveDiv.innerHTML += `
                     <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-green-500 flex justify-between items-center transition-all hover:shadow-md">
                         <div class="flex-1">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">填單:${time} | <span class="text-green-600">預計取貨:${order.pickupTime || '未填'}</span></p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">填單:${orderTime} | <span class="text-green-600">預計取貨:${order.pickup_time || '未填'}</span></p>
                             <h3 class="font-black text-slate-800 text-lg leading-tight">${order.customer}</h3>
                             <p class="text-slate-500 text-sm mt-1 font-medium">${order.items}</p>
                             <p class="text-green-600 font-black mt-1">$${order.total}</p>
@@ -172,6 +174,7 @@
             });
         });
 
+        // --- 核心功能：歷史紀錄讀取 ---
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
             allHistory = [];
@@ -181,18 +184,26 @@
                 Object.keys(data).forEach(id => {
                     const h = data[id];
                     allHistory.push({id, ...h});
-                    if (new Date(h.time).toDateString() === todayStr) { todayRev += parseInt(h.total || 0); }
+                    // 計算今日營收
+                    if (new Date(h.timestamp).toDateString() === todayStr) { todayRev += parseInt(h.total || 0); }
                 });
             }
             document.getElementById('today-total').innerText = todayRev.toLocaleString();
-            allHistory.sort((a, b) => b.time - a.time);
+            allHistory.sort((a, b) => b.timestamp - a.timestamp); // 按時間倒序排列
             filterHistory();
         });
 
+        // --- 核心功能：完成訂單並轉入歷史 ---
         function completeOrder(id) {
             db.ref('orders/' + id).once('value', snapshot => {
                 const data = snapshot.val();
-                if (data) { db.ref('history').push(data).then(() => { db.ref('orders/' + id).remove(); }); }
+                if (data) {
+                    // 確保歷史紀錄保有當前標記
+                    data.status = 'completed';
+                    db.ref('history').push(data).then(() => {
+                        db.ref('orders/' + id).remove();
+                    });
+                }
             });
         }
 
@@ -201,17 +212,20 @@
             const dateKey = document.getElementById('date-input').value;
             const listDiv = document.getElementById('history-list');
             listDiv.innerHTML = '';
+            
             const filtered = allHistory.filter(h => {
-                const orderDate = new Date(h.time).toISOString().split('T')[0];
+                const orderDate = new Date(h.timestamp).toISOString().split('T')[0];
                 return h.customer.toLowerCase().includes(nameKey) && (dateKey ? orderDate === dateKey : true);
             });
+            
             if (filtered.length === 0) { listDiv.innerHTML = '<p class="p-10 text-center text-slate-400">找不到相符的紀錄</p>'; return; }
+            
             filtered.forEach(h => {
-                const dateObj = new Date(h.time);
+                const dateObj = new Date(h.timestamp);
                 listDiv.innerHTML += `
                     <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
                         <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | 取貨:${h.pickupTime || '-'}</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | 取貨:${h.pickup_time || '-'}</p>
                             <h4 class="font-bold text-slate-700">${h.customer}</h4>
                             <p class="text-xs text-slate-500">${h.items}</p>
                         </div>
