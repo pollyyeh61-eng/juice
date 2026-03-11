@@ -7,6 +7,7 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#22c55e">
+    <link rel="apple-touch-icon" href="1.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -30,9 +31,9 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="addToHomeScreen()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active">📲 下載 APP</button>
-                <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active">💰 收銀</button>
-                <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active">⚙️ 管理</button>
+                <button onclick="addToHomeScreen()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
+                <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">💰 收銀</button>
+                <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">⚙️ 管理</button>
             </div>
         </div>
     </nav>
@@ -41,16 +42,22 @@
         <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
             <div class="flex flex-col md:flex-row items-center gap-6">
                 <img src="5.png" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
-                <div class="flex-1 space-y-3">
-                    <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
-                        <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
-                    </h2>
+                <div class="flex-1 space-y-4">
+                    <div>
+                        <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
+                            <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
+                        </h2>
+                        <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
+                            我們堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離技術，雖然費時，但能完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾<span class="font-bold text-green-600">無糖、無水、無添加</span>，讓您每一口都能喝到產地直送的真實鮮甜，體驗大自然最誠實的饋贈。
+                        </p>
+                    </div>
+                    
                     <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
                         <p class="text-[11px] font-bold text-green-600 uppercase mb-2">💡 建議喝法</p>
-                        <ul class="text-xs text-stone-600 space-y-1 font-bold">
-                            <li>1. 喝原味</li>
-                            <li>2. 加檸檬汁</li>
-                            <li>3. 加甘梅粉</li>
+                        <ul class="text-xs text-stone-700 space-y-1.5 font-bold">
+                            <li class="flex items-center gap-2 font-black">1. 喝原味（感受慢磨鮮榨的純粹）</li>
+                            <li class="flex items-center gap-2 font-black">2. 加檸檬汁（清爽果香層次倍增）</li>
+                            <li class="flex items-center gap-2 font-black">3. 加甘梅粉（經典風味回甘無窮）</li>
                         </ul>
                     </div>
                 </div>
@@ -59,7 +66,7 @@
 
         <div id="menu" class="space-y-4 mb-8"></div>
 
-        <footer id="order-success-info" class="hidden transition-all duration-500">
+        <div id="order-success-info" class="hidden transition-all duration-500 mb-20">
             <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-green-500 flex flex-col gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">✅</div>
@@ -69,17 +76,17 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
                         <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">預約時間</p>
-                        <p id="display-time" class="text-base font-black text-red-600">--:--</p>
+                        <p id="display-time" class="text-base font-black text-red-600 leading-none">--:--</p>
                     </div>
-                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100">
+                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
                         <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">自取地點</p>
-                        <p id="display-location" class="text-sm font-black text-stone-800 leading-tight">--</p>
+                        <p id="display-location" class="text-xs font-black text-stone-800 leading-tight">--</p>
                     </div>
                 </div>
             </div>
-        </footer>
+        </div>
     </main>
 
     <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 translate-y-40 transition-all duration-500 border border-white/10">
@@ -91,7 +98,7 @@
     </div>
 
     <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
-    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 max-w-2xl mx-auto">
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 max-w-2xl mx-auto shadow-2xl">
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
         <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
         <div id="summary-list" class="space-y-4 mb-8"></div>
@@ -144,7 +151,7 @@
         function updateCart(id, change) {
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
-            render(); // 重新渲染數量
+            document.getElementById(`qty-${id}`).innerText = cart[id] || 0;
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
                 total += products.find(x => x.id === pid).price * cart[pid];
@@ -171,45 +178,31 @@
             setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
         }
 
-        // ✅ 修正過的下單函數
         function sendOrder() {
             const name = document.getElementById('user-name').value;
             if(!name) return alert("請輸入姓名！");
+            
+            const btn = document.getElementById('send-btn');
+            btn.innerText = "傳送預約中..."; btn.disabled = true;
 
-            // 1. 抓取正確時間
             const now = new Date();
-            const timeString = now.toLocaleTimeString('zh-TW', { hour12: true, hour: '2-digit', minute: '2-digit' });
-
-            // 2. 抓取地點文字 (從導航列的 ID 抓取)
-            const fullLocation = document.getElementById('current-location').innerText;
-            const cleanLocation = fullLocation.split('(')[0].trim(); // 去掉括號後的開攤時間
-
+            const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            const locStr = document.getElementById('current-location').innerText.split('(')[0].trim();
             const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
 
             db.ref('orders').push({
-                customer: name,
-                items: detail,
-                total: document.getElementById('total-price').innerText,
-                time: Date.now(),
-                orderTimeStr: timeString, // 儲存易讀時間
-                location: cleanLocation   // 儲存下單地點
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
             }).then(() => { 
                 closeDrawer();
-                // 3. 回填至畫面上的成功區塊
                 document.getElementById('display-name').innerText = name + " 同學";
-                document.getElementById('display-time').innerText = timeString;
-                document.getElementById('display-location').innerText = cleanLocation;
-                
-                // 顯示該區塊
+                document.getElementById('display-time').innerText = timeStr;
+                document.getElementById('display-location').innerText = locStr;
                 document.getElementById('order-success-info').classList.remove('hidden');
-                
-                // 清空購物車
                 cart = {}; render();
                 document.getElementById('total-price').innerText = "0";
                 document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
-                
-                // 自動滾動到底部
-                setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 300);
+                btn.innerText = "送出預約 🚀"; btn.disabled = false;
+                setTimeout(() => document.getElementById('order-success-info').scrollIntoView({ behavior: 'smooth' }), 500);
             });
         }
 
@@ -218,7 +211,7 @@
             if(prompt('密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
         }
 
-        function addToHomeScreen() { alert("點擊瀏覽器分享圖示 -> 加入主畫面"); }
+        function addToHomeScreen() { alert("點擊分享圖示 ➔ 加入主畫面"); }
 
         render();
     </script>
