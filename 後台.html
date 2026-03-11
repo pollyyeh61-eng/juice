@@ -198,15 +198,22 @@
             `).join('');
         }
 
+        // --- 核心修正：確保連動歷史紀錄 ---
         function completeOrder(id) {
             const orderRef = db.ref('orders/' + id);
             orderRef.once('value', snapshot => {
                 const data = snapshot.val();
                 if (data) {
-                    data.status = 'completed';
-                    data.completedAt = Date.now();
-                    db.ref('history').push(data).then(() => {
-                        orderRef.remove();
+                    const historyData = {
+                        ...data,
+                        status: 'completed',
+                        completedAt: Date.now() // 標記完成時間
+                    };
+                    // 先存入歷史，成功後再移除訂單，確保不丟單
+                    db.ref('history').push(historyData).then(() => {
+                        return orderRef.remove();
+                    }).then(() => {
+                        console.log("訂單已結案並同步至歷史");
                     });
                 }
             });
@@ -222,26 +229,28 @@
                 Object.keys(data).forEach(id => {
                     const h = data[id];
                     allHistory.push({id, ...h});
-                    if (new Date(h.timestamp).toDateString() === todayStr) { todayRev += parseInt(h.total || 0); }
+                    // 只統計「原始訂單日期」是今天的營收
+                    if (new Date(h.timestamp).toDateString() === todayStr) { 
+                        todayRev += parseInt(h.total || 0); 
+                    }
                 });
             }
             document.getElementById('today-total').innerText = todayRev.toLocaleString();
-            // 排序：最新的在最上面
+            // 排序：完成時間越新的越上面
             allHistory.sort((a, b) => (b.completedAt || b.timestamp) - (a.completedAt || a.timestamp));
             filterHistory();
         });
 
-        // --- 修正後的顯示邏輯 ---
         function filterHistory() {
             const nameKey = document.getElementById('search-input').value.toLowerCase();
-            const dateKey = document.getElementById('date-input').value; // 格式: yyyy-mm-dd
+            const dateKey = document.getElementById('date-input').value; 
             const listDiv = document.getElementById('history-list');
+            if(!listDiv) return;
             listDiv.innerHTML = '';
             
             const filtered = allHistory.filter(h => {
                 const orderDate = new Date(h.timestamp).toISOString().split('T')[0];
                 const matchName = h.customer.toLowerCase().includes(nameKey);
-                // 關鍵：如果沒有選日期 (dateKey 為空)，則視為符合 (true)
                 const matchDate = dateKey ? (orderDate === dateKey) : true;
                 return matchName && matchDate;
             });
