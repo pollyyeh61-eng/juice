@@ -16,8 +16,8 @@
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         .btn-active:active { transform: scale(0.95); }
-        /* 隱藏原生下拉箭頭讓 UI 更乾淨 */
-        .time-select-custom { appearance: none; -webkit-appearance: none; cursor: pointer; }
+        /* 下拉選單居中修正 */
+        select { text-align-last: center; }
     </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
@@ -33,7 +33,7 @@
             </div>
 
             <div class="flex gap-2">
-                <a href="https://yourdomain.com/guava_hub.apk" download class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</a>
+                <button onclick="addToHomeScreen()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
                 <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">💰 收銀</button>
                 <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">⚙️ 管理</button>
             </div>
@@ -80,14 +80,14 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
                         <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">自選取貨時段</p>
-                        <select id="display-time" class="time-select-custom w-full bg-transparent text-base font-black text-red-600 leading-none text-center outline-none">
-                            <option value="15:00">15:00</option>
-                            <option value="15:30">15:30</option>
-                            <option value="16:00">16:00</option>
-                            <option value="16:30">16:30</option>
-                            <option value="17:00">17:00</option>
-                            <option value="17:30">17:30</option>
-                            <option value="18:00">18:00</option>
+                        <select id="pickup-time" class="bg-transparent text-base font-black text-red-600 outline-none w-full cursor-pointer">
+                            <option>15:00</option>
+                            <option>15:30</option>
+                            <option>16:00</option>
+                            <option>16:30</option>
+                            <option>17:00</option>
+                            <option>17:30</option>
+                            <option>18:00</option>
                         </select>
                     </div>
                     <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
@@ -195,7 +195,6 @@
             const btn = document.getElementById('send-btn');
             btn.innerText = "傳送預約中..."; btn.disabled = true;
 
-            // 修改處：移除自動產生的 timeStr，讓客人從選單自選
             const locStr = document.getElementById('current-location').innerText.split('(')[0].trim();
             const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
 
@@ -203,8 +202,8 @@
                 customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now()
             }).then(() => { 
                 closeDrawer();
-                document.getElementById('display-name').innerText = name + " 同學";
-                // 預設選中 16:30，客人可隨時更改
+                // 修改處：刪除 " 同學"
+                document.getElementById('display-name').innerText = name;
                 document.getElementById('display-location').innerText = locStr;
                 document.getElementById('order-success-info').classList.remove('hidden');
                 cart = {}; render();
@@ -219,6 +218,8 @@
             if(sessionStorage.getItem('admin')==='ok') { window.location.href=url; return; }
             if(prompt('密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
         }
+
+        function addToHomeScreen() { alert("點擊分享圖示 ➔ 加入主畫面"); }
 
         render();
     </script>
