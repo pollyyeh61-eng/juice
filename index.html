@@ -16,7 +16,6 @@
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         .btn-active:active { transform: scale(0.95); }
-        select { text-align-last: center; -webkit-appearance: none; }
     </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
@@ -32,7 +31,7 @@
             </div>
 
             <div class="flex gap-2">
-                <button id="install-btn" onclick="presentInstallPrompt()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
+                <button id="pwa-install-btn" onclick="triggerPWAInstall()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
                 <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">💰 收銀</button>
                 <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">⚙️ 管理</button>
             </div>
@@ -88,19 +87,16 @@
     </div>
 
     <div id="overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
-    
     <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[70] translate-y-full transition-transform duration-300 max-w-2xl mx-auto shadow-2xl">
         <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
         <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
-        
         <div id="summary-list" class="space-y-4 mb-6"></div>
-
-        <div class="flex flex-col gap-3 mb-8">
+        
+        <div class="space-y-3 mb-8">
             <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-5 rounded-2xl font-bold text-lg outline-none focus:ring-2 focus:ring-green-500">
-            
             <div class="bg-red-50 p-4 rounded-2xl border border-red-100 flex items-center justify-between">
-                <span class="font-bold text-red-600 pl-2">預約時段</span>
-                <select id="user-pickup-time" class="bg-white px-6 py-2 rounded-xl font-black text-red-600 border border-red-200 outline-none cursor-pointer">
+                <span class="font-bold text-red-600 pl-2">取貨時段</span>
+                <select id="user-pickup-time" class="bg-white px-4 py-2 rounded-xl font-black text-red-600 border border-red-200 outline-none">
                     <option>14:00</option><option>14:30</option>
                     <option>15:00</option><option>15:30</option>
                     <option>16:00</option><option selected>16:30</option>
@@ -114,17 +110,24 @@
     </div>
 
     <script>
+        // --- 真正的瀏覽器安裝偵測設計 ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
+            e.preventDefault(); // 攔截預設行為
+            deferredPrompt = e;  // 儲存事件，等待用戶點擊按鈕
+            console.log("瀏覽器已準備好安裝偵測");
         });
 
-        async function presentInstallPrompt() {
+        async function triggerPWAInstall() {
             if (deferredPrompt) {
-                deferredPrompt.prompt();
+                deferredPrompt.prompt(); // 觸發瀏覽器系統安裝視窗
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('User accepted the PWA install');
+                }
                 deferredPrompt = null;
             } else {
+                // 若環境不支援（如 iOS Safari），則顯示備案提示
                 alert("點擊分享圖示 ➔ 加入主畫面");
             }
         }
@@ -202,29 +205,21 @@
 
         function sendOrder() {
             const name = document.getElementById('user-name').value;
-            const pickupTime = document.getElementById('user-pickup-time').value; // 取得選定的時間
+            const time = document.getElementById('user-pickup-time').value;
             if(!name) return alert("請輸入姓名！");
-            
             const btn = document.getElementById('send-btn');
             btn.innerText = "傳送預約中..."; btn.disabled = true;
-
             const locStr = document.getElementById('current-location').innerText.split('(')[0].trim();
             const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
 
-            // 將預約時間也傳送到 Firebase
             db.ref('orders').push({
-                customer: name,
-                items: detail,
-                total: document.getElementById('total-price').innerText,
-                pickup_time: pickupTime, 
-                timestamp: Date.now()
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, pickup_time: time, timestamp: Date.now()
             }).then(() => { 
                 closeDrawer();
                 document.getElementById('display-name').innerText = name;
-                document.getElementById('display-time').innerText = pickupTime;
+                document.getElementById('display-time').innerText = time;
                 document.getElementById('display-location').innerText = locStr;
                 document.getElementById('order-success-info').classList.remove('hidden');
-                
                 cart = {}; render();
                 document.getElementById('total-price').innerText = "0";
                 document.getElementById('checkout-bar').style.transform = 'translateX(-50%) translateY(160px)';
