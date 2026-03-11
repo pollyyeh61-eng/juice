@@ -4,16 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>芭樂汁團購｜GUAVA HUB</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#22c55e">
     <link rel="apple-touch-icon" href="1.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <style>
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         .btn-active:active { transform: scale(0.95); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+        .dot-online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
     </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
@@ -32,7 +37,7 @@
             </div>
 
             <div class="grid grid-cols-4 gap-2">
-                <button id="pwa-install-btn" onclick="triggerPWAInstall()" class="h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">📲 下載</button>
+                <button id="pwa-install-btn" onclick="triggerPWAInstall()" class="h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all opacity-50">📲 下載</button>
                 <button onclick="shareApp()" class="h-10 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">🔗 分享</button>
                 <button onclick="checkAuth('收銀.html')" class="h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">💰 收銀</button>
                 <button onclick="checkAuth('後台.html')" class="h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 btn-active transition-all">⚙️ 管理</button>
@@ -40,7 +45,7 @@
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto p-4 pb-12">
+    <main class="max-w-4xl mx-auto p-4 pb-32">
         <div id="status-notice" class="hidden mb-6 p-8 rounded-[2.5rem] text-center border-2">
             <h2 id="notice-title" class="text-2xl font-black mb-2"></h2>
             <p id="notice-desc" class="text-sm font-medium opacity-80"></p>
@@ -49,15 +54,13 @@
         <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6">
             <div class="flex flex-col md:flex-row items-center gap-6">
                 <img src="1000026536.jpg" class="w-full md:w-40 h-40 rounded-3xl object-cover shadow-sm" alt="鮮榨芭樂汁">
-                <div class="flex-1 space-y-4">
-                    <div>
-                        <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
-                            <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
-                        </h2>
-                        <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
-                            我們堅持採用慢磨機果渣分離技術，完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾無糖、無水、無添加。
-                        </p>
-                    </div>
+                <div class="flex-1 space-y-2">
+                    <h2 class="text-lg font-black text-stone-800 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
+                    </h2>
+                    <p class="text-sm text-stone-600 leading-relaxed font-medium">
+                        我們堅持採用慢磨技術，果渣分離保留最純粹維生素。承諾無糖、無水、無添加。
+                    </p>
                 </div>
             </div>
         </section>
@@ -68,7 +71,7 @@
                 <li>1. 現喝最鮮：建議兩小時內飲用，口感最清爽。</li>
                 <li>2. 微凍更爽：冷凍 15 分鐘，芭樂果味更有層次。</li>
                 <li>3. 飲前搖勻：天然果膠易沉澱，搖一搖更美味。</li>
-                <li>3. 甘梅口味：加入甘梅粉，不同風味哦。</li>
+                <li>3. 加入甘梅：甘梅口味的芭樂汁別有一番風味。</li>
             </ul>
         </section>
 
@@ -76,13 +79,63 @@
             <div id="menu" class="space-y-4 mb-8"></div>
         </div>
 
-        <div id="order-success-info" class="hidden mb-20"></div>
+        <div id="order-success-info" class="hidden transition-all duration-500 mb-10">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-green-500 flex flex-col gap-4 relative">
+                <button onclick="clearOrderMemory()" class="absolute top-4 right-4 text-stone-300 text-xs font-bold">清除紀錄</button>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">✅</div>
+                    <div>
+                        <h3 class="font-black text-stone-800 text-sm">預約成功！<span id="display-name" class="text-green-600"></span></h3>
+                        <p class="text-[11px] text-stone-400 font-bold">老闆已收到您的預訂</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
+                        <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">取貨時段</p>
+                        <select id="edit-pickup-time" onchange="updateLiveTime()" class="bg-transparent font-black text-red-600 outline-none text-sm">
+                            <option>14:00</option><option>14:30</option><option>15:00</option>
+                            <option>15:30</option><option>16:00</option><option>16:30</option>
+                            <option>17:00</option><option>17:30</option><option>18:00</option>
+                        </select>
+                        <button id="update-time-btn" onclick="submitTimeChange()" class="mt-2 bg-red-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold hidden">更新</button>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
+                        <p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">地點</p>
+                        <p id="display-location" class="text-[10px] font-black text-stone-800 leading-tight">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] ..."></div>
+    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-stone-900/95 backdrop-blur text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-[100] translate-y-40 transition-all duration-500 border border-white/10">
+        <div class="pl-2">
+            <p class="text-[10px] opacity-50 font-bold tracking-widest uppercase">Cart Total</p>
+            <p class="text-3xl font-black text-green-400">$<span id="total-price">0</span></p>
+        </div>
+        <button onclick="openDrawer()" class="bg-green-500 text-black px-10 py-4 rounded-[1.8rem] font-black text-lg btn-active">結帳去</button>
+    </div>
+
+    <div id="overlay" class="fixed inset-0 bg-black/60 z-[110] hidden opacity-0 transition-opacity duration-300" onclick="closeDrawer()"></div>
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-white p-8 rounded-t-[3rem] z-[120] translate-y-full transition-transform duration-300 max-w-2xl mx-auto shadow-2xl">
+        <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-8"></div>
+        <h2 class="text-2xl font-black mb-6 text-stone-800">訂單確認</h2>
+        <div id="summary-list" class="space-y-3 mb-6"></div>
+        <div class="space-y-3 mb-8">
+            <input type="text" id="user-name" placeholder="請輸入姓名" class="w-full bg-stone-100 p-5 rounded-2xl font-bold text-lg outline-none focus:ring-2 focus:ring-green-500">
+            <div class="bg-red-50 p-4 rounded-2xl border border-red-100 flex items-center justify-between">
+                <span class="font-bold text-red-600 pl-2">預計取貨</span>
+                <select id="user-pickup-time" class="bg-white px-4 py-2 rounded-xl font-black text-red-600 border border-red-200 outline-none">
+                    <option>14:00</option><option>14:30</option><option>15:00</option>
+                    <option>15:30</option><option selected>16:30</option><option>17:00</option>
+                    <option>17:30</option><option>18:00</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="sendOrder()" id="send-btn" class="w-full bg-green-500 text-stone-900 py-5 rounded-[2rem] font-black text-xl shadow-xl btn-active">送出預約 🚀</button>
+    </div>
 
     <script>
-        // --- 1. Firebase 初始化 ---
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
@@ -92,67 +145,76 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 2. PWA 下載邏輯補回 ---
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('pwa-install-btn').classList.remove('opacity-30');
-        });
-
-        async function triggerPWAInstall() {
-            if (!deferredPrompt) {
-                alert("手機瀏覽器：請點選功能選單「新增至主畫面」\niPhone：請點選分享按鈕「加入主畫面」");
-                return;
-            }
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') deferredPrompt = null;
-        }
-
-        // --- 3. 分享邏輯補回 ---
-        async function shareApp() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'GUAVA HUB 芭樂汁團購',
-                    text: '這家芭樂汁超好喝！快來預訂～',
-                    url: window.location.href
-                }).catch(() => {});
-            } else {
-                alert("請複製網址分享給好友：\n" + window.location.href);
-            }
-        }
-
-        // --- 4. 營業狀態與取貨點監聽 ---
+        // 產品資料 (圖片暫時使用您提供的文件名)
         const products = [
-            { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '5.png' },
-            { id: 'big_2', name: '大瓶 (2瓶優惠組)', price: 120, img: '5.png' },
+            { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '1000026536.jpg' },
+            { id: 'big_2', name: '大瓶 (2瓶優惠組)', price: 120, img: '1000026536.jpg' },
             { id: 'small_1', name: '小瓶 (單瓶)', price: 60, img: '2.png' },
             { id: 'small_2', name: '小瓶 (2瓶優惠組)', price: 100, img: '2.png' }
         ];
 
         let cart = {};
         let businessStatus = "營業中";
+        let deferredPrompt;
 
+        // --- PWA 安裝電力監聽 ---
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.remove('opacity-50');
+            console.log("PWA 電力就緒 ⚡");
+        });
+
+        async function triggerPWAInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') deferredPrompt = null;
+            } else {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                alert(isIOS ? "請點選瀏覽器下方的「分享」按鈕，然後選擇「加入主畫面」📲" : "您的瀏覽器已安裝此 App，或請從選單中手動新增。");
+            }
+        }
+
+        // --- 原生分享 ---
+        async function shareApp() {
+            if (navigator.share) {
+                navigator.share({ title: 'GUAVA HUB', text: '這家芭樂汁超好喝！快來預約！', url: window.location.href });
+            } else {
+                const dummy = document.createElement('input');
+                document.body.appendChild(dummy); dummy.value = window.location.href; dummy.select();
+                document.execCommand('copy'); document.body.removeChild(dummy);
+                alert("網址已複製到剪貼簿！");
+            }
+        }
+
+        // --- 初始化與監聽 ---
         window.onload = () => {
+            const savedOrderId = localStorage.getItem('lastOrderId');
+            if (savedOrderId) checkOrderExists(savedOrderId);
+            
             db.ref('config/pickupLocation').on('value', snap => {
                 document.getElementById('current-location').innerText = snap.val() || "載入中...";
             });
+
             db.ref('config/businessStatus').on('value', snap => {
                 businessStatus = snap.val() || "營業中";
                 applyBusinessStatus();
             });
+
             render();
         };
 
         function applyBusinessStatus() {
             const badge = document.getElementById('status-badge');
             const notice = document.getElementById('status-notice');
-            const menu = document.getElementById('menu-container');
-            
-            badge.classList.remove('hidden', 'bg-green-100', 'text-green-600', 'bg-amber-100', 'text-amber-600', 'bg-red-100', 'text-red-600');
+            const container = document.getElementById('menu-container');
+            const bar = document.getElementById('checkout-bar');
+
+            badge.className = "text-[10px] font-black px-2 py-0.5 rounded-md border";
             notice.classList.add('hidden');
-            menu.classList.remove('opacity-20', 'pointer-events-none');
+            container.classList.remove('opacity-20', 'pointer-events-none');
 
             if (businessStatus === "營業中") {
                 badge.innerText = "● 營業中";
@@ -160,44 +222,45 @@
             } else if (businessStatus === "已售完") {
                 badge.innerText = "● 已售完";
                 badge.classList.add('bg-amber-100', 'text-amber-600', 'border-amber-200');
-                showNotice("今日已售完", "現貨已被搶訂一空，感謝支持！", "bg-amber-50", "border-amber-200", "text-amber-800");
-                menu.classList.add('opacity-20', 'pointer-events-none');
+                showNotice("今日已搶購一空", "所有現貨都已經被預訂囉！", "bg-amber-50", "border-amber-200", "text-amber-800");
+                container.classList.add('opacity-20', 'pointer-events-none');
+                bar.classList.add('translate-y-40');
             } else {
                 badge.innerText = "● 休息中";
                 badge.classList.add('bg-red-100', 'text-red-600', 'border-red-200');
-                showNotice("本日已結束營業", "老闆收攤休息囉，我們明天見！", "bg-stone-100", "border-stone-200", "text-stone-800");
-                menu.classList.add('opacity-20', 'pointer-events-none');
+                showNotice("本日已收攤", "老闆休息囉，明天下午 14:00 再見！", "bg-stone-100", "border-stone-200", "text-stone-800");
+                container.classList.add('opacity-20', 'pointer-events-none');
+                bar.classList.add('translate-y-40');
             }
             badge.classList.remove('hidden');
         }
 
-        function showNotice(title, desc, bgColor, borderColor, textColor) {
-            const notice = document.getElementById('status-notice');
-            notice.className = `hidden mb-6 p-8 rounded-[2.5rem] text-center border-2 ${bgColor} ${borderColor} ${textColor}`;
+        function showNotice(title, desc, bg, border, text) {
+            const n = document.getElementById('status-notice');
+            n.className = `mb-6 p-8 rounded-[2.5rem] text-center border-2 ${bg} ${border} ${text}`;
             document.getElementById('notice-title').innerText = title;
             document.getElementById('notice-desc').innerText = desc;
-            notice.classList.remove('hidden');
+            n.classList.remove('hidden');
         }
 
-        // ... (render, updateCart 等函數與原本相同) ...
         function render() {
             const menu = document.getElementById('menu');
             menu.innerHTML = '';
             products.forEach(p => {
-                const qty = cart[p.id] || 0;
+                const q = cart[p.id] || 0;
                 menu.innerHTML += `
                     <div class="bg-white p-4 rounded-[2.5rem] flex items-center justify-between shadow-sm border border-stone-100">
                         <div class="flex items-center gap-3">
                             <img src="${p.img}" class="w-16 h-16 rounded-[1.5rem] object-cover">
                             <div>
-                                <h3 class="font-bold text-stone-800 text-base leading-tight">${p.name}</h3>
+                                <h4 class="font-bold text-stone-800 text-sm leading-tight">${p.name}</h4>
                                 <p class="text-green-600 font-black text-lg">$${p.price}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 bg-stone-50 p-1 rounded-full border border-stone-100">
-                            <button onclick="updateCart('${p.id}', -1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-stone-300">-</button>
-                            <span id="qty-${p.id}" class="font-black w-4 text-center text-sm">${qty}</span>
-                            <button onclick="updateCart('${p.id}', 1)" class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-green-600">+</button>
+                            <button onclick="updateCart('${p.id}', -1)" class="w-8 h-8 rounded-full bg-white shadow-sm font-bold text-stone-300">-</button>
+                            <span class="font-black w-4 text-center text-xs">${q}</span>
+                            <button onclick="updateCart('${p.id}', 1)" class="w-8 h-8 rounded-full bg-white shadow-sm font-bold text-green-600">+</button>
                         </div>
                     </div>`;
             });
@@ -207,20 +270,91 @@
             if(businessStatus !== "營業中") return;
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
-            render(); // 重新渲染確保數字正確
+            render();
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
                 total += products.find(x => x.id === pid).price * cart[pid];
                 count += cart[pid];
             });
-            // 此處省略控制 checkout-bar 顯示的代碼...
+            document.getElementById('total-price').innerText = total;
+            document.getElementById('checkout-bar').classList.toggle('translate-y-40', count === 0);
+            document.getElementById('checkout-bar').classList.toggle('translate-y-0', count > 0);
+        }
+
+        function openDrawer() {
+            const list = document.getElementById('summary-list');
+            list.innerHTML = '';
+            Object.keys(cart).forEach(id => {
+                const p = products.find(x => x.id === pid => pid === id);
+                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl text-sm"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
+            });
+            document.getElementById('overlay').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('overlay').style.opacity = '1'; document.getElementById('drawer').classList.add('drawer-up'); }, 10);
+        }
+
+        function closeDrawer() {
+            document.getElementById('overlay').style.opacity = '0';
+            document.getElementById('drawer').classList.remove('drawer-up');
+            setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 300);
+        }
+
+        function sendOrder() {
+            const name = document.getElementById('user-name').value;
+            const time = document.getElementById('user-pickup-time').value;
+            if(!name) return alert("請輸入姓名！");
+            const btn = document.getElementById('send-btn');
+            btn.innerText = "正在傳送..."; btn.disabled = true;
+            const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
+            const newOrderRef = db.ref('orders').push();
+            newOrderRef.set({
+                customer: name, items: detail, total: document.getElementById('total-price').innerText, 
+                pickup_time: time, status: 'pending', timestamp: Date.now()
+            }).then(() => { 
+                localStorage.setItem('lastOrderId', newOrderRef.key);
+                closeDrawer(); checkOrderExists(newOrderRef.key);
+                cart = {}; render();
+                document.getElementById('total-price').innerText = "0";
+                document.getElementById('checkout-bar').classList.add('translate-y-40');
+                btn.innerText = "送出預約 🚀"; btn.disabled = false;
+                setTimeout(() => document.getElementById('order-success-info').scrollIntoView({ behavior: 'smooth' }), 500);
+            });
+        }
+
+        function checkOrderExists(id) {
+            db.ref('orders/' + id).on('value', snap => {
+                const data = snap.val();
+                if (data) {
+                    document.getElementById('display-name').innerText = data.customer;
+                    document.getElementById('display-location').innerText = document.getElementById('current-location').innerText.split('(')[0];
+                    document.getElementById('edit-pickup-time').value = data.pickup_time;
+                    document.getElementById('order-success-info').classList.remove('hidden');
+                } else {
+                    document.getElementById('order-success-info').classList.add('hidden');
+                }
+            });
+        }
+
+        function updateLiveTime() { document.getElementById('update-time-btn').classList.remove('hidden'); }
+        function submitTimeChange() {
+            const id = localStorage.getItem('lastOrderId');
+            const time = document.getElementById('edit-pickup-time').value;
+            db.ref('orders/' + id).update({ pickup_time: time }).then(() => {
+                alert("✅ 取貨時間已更新");
+                document.getElementById('update-time-btn').classList.add('hidden');
+            });
+        }
+
+        function clearOrderMemory() {
+            if(confirm("確定要清除手機上的預約紀錄嗎？")) {
+                localStorage.removeItem('lastOrderId');
+                document.getElementById('order-success-info').classList.add('hidden');
+            }
         }
 
         function checkAuth(url) {
             if(sessionStorage.getItem('admin')==='ok') { window.location.href=url; return; }
-            if(prompt('密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
+            if(prompt('管理員密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
         }
     </script>
 </body>
 </html>
-
