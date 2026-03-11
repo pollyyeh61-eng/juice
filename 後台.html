@@ -9,12 +9,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         .btn-active:active { transform: scale(0.95); }
-        .sync-glow { animation: sync-pulse 2s infinite; }
         @keyframes sync-pulse {
             0% { border-color: #e2e8f0; }
             50% { border-color: #22c55e; }
             100% { border-color: #e2e8f0; }
         }
+        .sync-glow { animation: sync-pulse 2s infinite; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-20">
@@ -76,6 +76,16 @@
             </div>
         </section>
 
+        <section class="bg-slate-900 p-6 rounded-[2rem] shadow-xl text-white">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-black flex items-center gap-2">📊 今日待備貨總計</h2>
+                <span class="text-[10px] border border-white/30 px-2 py-1 rounded font-bold text-white/50 uppercase">待處理訂單匯總</span>
+            </div>
+            <div id="prep-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="text-center p-3 bg-white/10 rounded-2xl border border-white/10">載入中...</div>
+            </div>
+        </section>
+
         <section>
             <h2 class="text-lg font-black mb-4 flex items-center gap-2 text-slate-800">
                 <span class="relative flex h-3 w-3">
@@ -102,7 +112,6 @@
     </main>
 
     <script>
-        // 確保 Session 檢查
         if (sessionStorage.getItem('admin') !== 'ok') { window.location.href = "index.html"; }
 
         const firebaseConfig = {
@@ -113,6 +122,61 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
+
+        // --- 核心：統計與訂單顯示 ---
+        db.ref('orders').on('value', snapshot => {
+            const liveDiv = document.getElementById('live-orders');
+            const prepDiv = document.getElementById('prep-summary');
+            liveDiv.innerHTML = '';
+            
+            const data = snapshot.val();
+            const prepStats = {};
+            productNames.forEach(name => prepStats[name] = 0);
+
+            if (!data) { 
+                liveDiv.innerHTML = '<div class="text-center py-10 text-slate-400 bg-white rounded-3xl border-2 border-dashed border-slate-100">目前沒有待處理訂單</div>';
+                renderPrepSummary(prepStats);
+                return; 
+            }
+            
+            Object.keys(data).forEach(id => {
+                const order = data[id];
+                
+                // 累計備貨數量
+                if(order.items) {
+                    const itemsArray = order.items.split(', ');
+                    itemsArray.forEach(itemStr => {
+                        const [name, qty] = itemStr.split('x');
+                        if (prepStats[name] !== undefined) { prepStats[name] += parseInt(qty); }
+                    });
+                }
+
+                const orderTime = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                liveDiv.innerHTML += `
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-green-500 flex justify-between items-center transition-all hover:shadow-md">
+                        <div class="flex-1">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">填單:${orderTime} | <span class="text-green-600 font-black">預計取貨:${order.pickup_time || '未填'}</span></p>
+                            <h3 class="font-black text-slate-800 text-lg leading-tight">${order.customer}</h3>
+                            <p class="text-slate-500 text-sm mt-1 font-medium">${order.items}</p>
+                            <p class="text-green-600 font-black mt-1">$${order.total}</p>
+                        </div>
+                        <button onclick="completeOrder('${id}')" class="ml-4 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold btn-active whitespace-nowrap">完成</button>
+                    </div>`;
+            });
+            renderPrepSummary(prepStats);
+        });
+
+        function renderPrepSummary(stats) {
+            const prepDiv = document.getElementById('prep-summary');
+            prepDiv.innerHTML = Object.entries(stats).map(([name, count]) => `
+                <div class="bg-white/10 p-3 rounded-2xl border border-white/10 flex flex-col items-center">
+                    <p class="text-[9px] font-bold text-white/50 mb-1 leading-tight h-6 text-center">${name}</p>
+                    <p class="text-2xl font-black ${count > 0 ? 'text-green-400' : 'text-white/20'}">${count}</p>
+                </div>
+            `).join('');
+        }
 
         // --- 地點功能 ---
         db.ref('config/pickupLocationData').on('value', snap => {
@@ -149,32 +213,8 @@
         });
         function setStatus(s) { db.ref('config').update({ shopStatus: s }); }
 
-        // --- 核心功能：訂單讀取 ---
+        // --- 歷史紀錄與完成訂單 ---
         let allHistory = [];
-        db.ref('orders').on('value', snapshot => {
-            const liveDiv = document.getElementById('live-orders');
-            liveDiv.innerHTML = '';
-            const data = snapshot.val();
-            if (!data) { liveDiv.innerHTML = '<div class="text-center py-10 text-slate-400 bg-white rounded-3xl border-2 border-dashed border-slate-100">目前沒有新訂單</div>'; return; }
-            
-            Object.keys(data).forEach(id => {
-                const order = data[id];
-                // 這裡將時間戳轉為讀得懂的時間
-                const orderTime = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                liveDiv.innerHTML += `
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-green-500 flex justify-between items-center transition-all hover:shadow-md">
-                        <div class="flex-1">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">填單:${orderTime} | <span class="text-green-600">預計取貨:${order.pickup_time || '未填'}</span></p>
-                            <h3 class="font-black text-slate-800 text-lg leading-tight">${order.customer}</h3>
-                            <p class="text-slate-500 text-sm mt-1 font-medium">${order.items}</p>
-                            <p class="text-green-600 font-black mt-1">$${order.total}</p>
-                        </div>
-                        <button onclick="completeOrder('${id}')" class="ml-4 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold btn-active whitespace-nowrap">完成</button>
-                    </div>`;
-            });
-        });
-
-        // --- 核心功能：歷史紀錄讀取 ---
         db.ref('history').on('value', snapshot => {
             const data = snapshot.val();
             allHistory = [];
@@ -184,21 +224,18 @@
                 Object.keys(data).forEach(id => {
                     const h = data[id];
                     allHistory.push({id, ...h});
-                    // 計算今日營收
                     if (new Date(h.timestamp).toDateString() === todayStr) { todayRev += parseInt(h.total || 0); }
                 });
             }
             document.getElementById('today-total').innerText = todayRev.toLocaleString();
-            allHistory.sort((a, b) => b.timestamp - a.timestamp); // 按時間倒序排列
+            allHistory.sort((a, b) => b.timestamp - a.timestamp);
             filterHistory();
         });
 
-        // --- 核心功能：完成訂單並轉入歷史 ---
         function completeOrder(id) {
             db.ref('orders/' + id).once('value', snapshot => {
                 const data = snapshot.val();
                 if (data) {
-                    // 確保歷史紀錄保有當前標記
                     data.status = 'completed';
                     db.ref('history').push(data).then(() => {
                         db.ref('orders/' + id).remove();
@@ -212,14 +249,11 @@
             const dateKey = document.getElementById('date-input').value;
             const listDiv = document.getElementById('history-list');
             listDiv.innerHTML = '';
-            
             const filtered = allHistory.filter(h => {
                 const orderDate = new Date(h.timestamp).toISOString().split('T')[0];
                 return h.customer.toLowerCase().includes(nameKey) && (dateKey ? orderDate === dateKey : true);
             });
-            
             if (filtered.length === 0) { listDiv.innerHTML = '<p class="p-10 text-center text-slate-400">找不到相符的紀錄</p>'; return; }
-            
             filtered.forEach(h => {
                 const dateObj = new Date(h.timestamp);
                 listDiv.innerHTML += `
