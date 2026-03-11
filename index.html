@@ -16,7 +16,6 @@
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; font-family: sans-serif; }
         .drawer-up { transform: translateY(0) !important; }
         .btn-active:active { transform: scale(0.95); }
-        /* 讓下拉選單文字置中且看起來更精緻 */
         select { text-align-last: center; -webkit-appearance: none; }
     </style>
 </head>
@@ -33,7 +32,7 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="addToHomeScreen()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
+                <button id="install-btn" onclick="presentInstallPrompt()" class="flex-1 h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">📲 下載 APP</button>
                 <button onclick="checkAuth('收銀.html')" class="flex-1 h-10 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">💰 收銀</button>
                 <button onclick="checkAuth('後台.html')" class="flex-1 h-10 bg-green-50 text-green-600 border border-green-100 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 btn-active transition-all">⚙️ 管理</button>
             </div>
@@ -50,17 +49,8 @@
                             <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
                         </h2>
                         <p class="text-sm text-stone-600 leading-relaxed font-medium mt-2">
-                            我們堅持採用<span class="text-green-600 font-bold">慢磨機</span>果渣分離技術，雖然費時，但能完美保留芭樂最純粹的維生素與清香。每一滴果汁都承諾<span class="font-bold text-green-600">無糖、無水、無添加</span>，讓您每一口都能喝到產地直送的真實鮮甜。
+                            堅持採用慢磨技術，無糖、無水、無添加，讓您喝到產地直送的真實鮮甜。
                         </p>
-                    </div>
-                    
-                    <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
-                        <p class="text-[11px] font-bold text-green-600 uppercase mb-2">💡 建議喝法</p>
-                        <ul class="text-xs text-stone-700 space-y-1.5 font-bold">
-                            <li class="flex items-center gap-2 font-black">1. 喝原味（感受慢磨鮮榨的純粹）</li>
-                            <li class="flex items-center gap-2 font-black">2. 加檸檬汁（清爽果香層次倍增）</li>
-                            <li class="flex items-center gap-2 font-black">3. 加甘梅粉（經典風味回甘無窮）</li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -81,13 +71,13 @@
                     <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
                         <p class="text-[10px] font-bold text-red-500 mb-1 uppercase">自選取貨時段</p>
                         <select id="pickup-time-select" class="bg-transparent text-base font-black text-red-600 outline-none w-full cursor-pointer">
-                            <option value="15:00">15:00</option>
-                            <option value="15:30">15:30</option>
-                            <option value="16:00">16:00</option>
-                            <option value="16:30" selected>16:30</option>
-                            <option value="17:00">17:00</option>
-                            <option value="17:30">17:30</option>
-                            <option value="18:00">18:00</option>
+                            <option>15:00</option>
+                            <option>15:30</option>
+                            <option>16:00</option>
+                            <option selected>16:30</option>
+                            <option>17:00</option>
+                            <option>17:30</option>
+                            <option>18:00</option>
                         </select>
                     </div>
                     <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100 text-center">
@@ -117,6 +107,29 @@
     </div>
 
     <script>
+        // PWA 下載邏輯優化：實現真正的「直接下載/安裝」功能
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('PWA Install Prompt Ready');
+        });
+
+        async function presentInstallPrompt() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                }
+                deferredPrompt = null;
+            } else {
+                // 如果瀏覽器尚未準備好，才顯示備案
+                alert("點擊瀏覽器選單中的「安裝應用程式」或「加入主畫面」即可完成下載");
+            }
+        }
+
+        // Firebase 與商品設定
         const firebaseConfig = {
             apiKey: "AIzaSyCgmCslx_E4tuQGOm8fccKNkCR2LnmjD8g",
             databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
@@ -191,21 +204,14 @@
         function sendOrder() {
             const name = document.getElementById('user-name').value;
             if(!name) return alert("請輸入姓名！");
-            
             const btn = document.getElementById('send-btn');
             btn.innerText = "傳送預約中..."; btn.disabled = true;
-
             const locStr = document.getElementById('current-location').innerText.split('(')[0].trim();
             const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
 
-            db.ref('orders').push({
-                customer: name, 
-                items: detail, 
-                total: document.getElementById('total-price').innerText, 
-                time: Date.now()
-            }).then(() => { 
+            db.ref('orders').push({ customer: name, items: detail, total: document.getElementById('total-price').innerText, time: Date.now() })
+            .then(() => { 
                 closeDrawer();
-                // 修正後：只顯示姓名，不加稱謂
                 document.getElementById('display-name').innerText = name;
                 document.getElementById('display-location').innerText = locStr;
                 document.getElementById('order-success-info').classList.remove('hidden');
@@ -221,9 +227,6 @@
             if(sessionStorage.getItem('admin')==='ok') { window.location.href=url; return; }
             if(prompt('密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
         }
-
-        // 修正後：恢復原本 PWA 提示彈窗
-        function addToHomeScreen() { alert("點擊分享圖示 ➔ 加入主畫面"); }
 
         render();
     </script>
