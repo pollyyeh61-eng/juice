@@ -29,6 +29,29 @@
     <main class="max-w-4xl mx-auto p-4 space-y-6">
 
         <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-slate-100">
+            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">💰 產品價格設置</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">大瓶 (單瓶)</label>
+                    <input type="number" id="price-big-1" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-black outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">大瓶 (2瓶組)</label>
+                    <input type="number" id="price-big-2" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-black outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">小瓶 (單瓶)</label>
+                    <input type="number" id="price-small-1" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-black outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">小瓶 (2瓶組)</label>
+                    <input type="number" id="price-small-2" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-black outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+            </div>
+            <p class="text-[10px] text-slate-400 font-medium px-1 mb-2 leading-tight">* 修改價格後請點擊下方「更新資訊」按鈕同步至前台</p>
+        </section>
+
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-slate-100">
             <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">📍 取貨地點與狀態設置</h2>
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -51,16 +74,16 @@
             </div>
 
             <div class="grid grid-cols-3 gap-2 mb-4">
-                <button onclick="setStatus('營業中')" id="btn-open" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active">🟢 營業中</button>
-                <button onclick="setStatus('已售完')" id="btn-soldout" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active">🟡 已售完</button>
-                <button onclick="setStatus('結束本日營業')" id="btn-close" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active">🔴 結束營業</button>
+                <button onclick="setStatus('營業中')" id="btn-open" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active transition-all">🟢 營業中</button>
+                <button onclick="setStatus('已售完')" id="btn-soldout" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active transition-all">🟡 已售完</button>
+                <button onclick="setStatus('結束本日營業')" id="btn-close" class="status-btn p-3 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 btn-active transition-all">🔴 結束營業</button>
             </div>
 
             <button onclick="updateSettings()" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold btn-active shadow-lg shadow-green-100">更新資訊並同步至前台 🚀</button>
         </section>
 
         <section class="bg-green-50 p-6 rounded-[2.5rem] border-2 border-green-200">
-            <h2 class="text-sm font-black text-green-800 mb-4 px-2">📦 今日待備貨總計</h2>
+            <h2 class="text-sm font-black text-green-800 mb-4 px-2 text-center uppercase tracking-widest">📦 今日待備貨總計</h2>
             <div id="prep-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
         </section>
 
@@ -95,21 +118,28 @@
         
         let currentStatus = "營業中";
 
-        // 1. 監聽與讀取現有地點設定
-        db.ref('config/pickupLocationData').on('value', snap => {
-            const data = snap.val();
-            if(data) {
-                document.getElementById('loc-market').value = data.market || "";
-                document.getElementById('loc-row').value = data.row || "";
-                document.getElementById('loc-no').value = data.no || "";
-                document.getElementById('loc-time').value = data.time || "";
+        // 1. 監聽與讀取現有設定 (地點與價格)
+        db.ref('config').on('value', snap => {
+            const config = snap.val();
+            if(config) {
+                // 填入地點
+                if(config.pickupLocationData) {
+                    document.getElementById('loc-market').value = config.pickupLocationData.market || "";
+                    document.getElementById('loc-row').value = config.pickupLocationData.row || "";
+                    document.getElementById('loc-no').value = config.pickupLocationData.no || "";
+                    document.getElementById('loc-time').value = config.pickupLocationData.time || "";
+                }
+                // 填入價格
+                if(config.prices) {
+                    document.getElementById('price-big-1').value = config.prices.big_1 || 70;
+                    document.getElementById('price-big-2').value = config.prices.big_2 || 120;
+                    document.getElementById('price-small-1').value = config.prices.small_1 || 60;
+                    document.getElementById('price-small-2').value = config.prices.small_2 || 100;
+                }
+                // 更新狀態按鈕 UI
+                currentStatus = config.businessStatus || "營業中";
+                updateStatusUI();
             }
-        });
-
-        // 監聽目前的營業狀態
-        db.ref('config/businessStatus').on('value', snap => {
-            currentStatus = snap.val() || "營業中";
-            updateStatusUI();
         });
 
         function setStatus(s) {
@@ -124,7 +154,7 @@
             if(currentStatus === '結束本日營業') document.getElementById('btn-close').classList.add('active', 'text-red-600');
         }
 
-        // 2. 更新按鈕邏輯
+        // 2. 更新按鈕邏輯 (地點 + 狀態 + 價格 一次儲存)
         function updateSettings() {
             const market = document.getElementById('loc-market').value;
             const row = document.getElementById('loc-row').value;
@@ -132,14 +162,22 @@
             const time = document.getElementById('loc-time').value;
             const fullString = `${market} ${row}排${no}號 (${time} 開攤)`;
 
+            const prices = {
+                big_1: parseInt(document.getElementById('price-big-1').value) || 70,
+                big_2: parseInt(document.getElementById('price-big-2').value) || 120,
+                small_1: parseInt(document.getElementById('price-small-1').value) || 60,
+                small_2: parseInt(document.getElementById('price-small-2').value) || 100
+            };
+
             db.ref('config').update({
                 pickupLocation: fullString,
                 pickupLocationData: { market, row, no, time },
-                businessStatus: currentStatus
-            }).then(() => alert("✅ 設定已更新並同步至前台"));
+                businessStatus: currentStatus,
+                prices: prices
+            }).then(() => alert("✅ 所有設定（含價格）已更新！"));
         }
 
-        // --- 訂單與歷史紀錄邏輯 (維持不變) ---
+        // --- 訂單處理邏輯 ---
         const productNames = ["大瓶 (單瓶)", "大瓶 (2瓶優惠組)", "小瓶 (單瓶)", "小瓶 (2瓶優惠組)"];
         db.ref('orders').on('value', snapshot => {
             const data = snapshot.val();
@@ -195,7 +233,7 @@
             if (data) Object.keys(data).forEach(id => {
                 const h = data[id];
                 allHistory.push({id, ...h});
-                if (new Date(h.timestamp).toDateString() === new Date().toDateString()) rev += parseInt(h.total || 0);
+                if (new Date(h.timestamp || h.time).toDateString() === new Date().toDateString()) rev += parseInt(h.total || 0);
             });
             document.getElementById('today-total').innerText = rev.toLocaleString();
             allHistory.sort((a,b) => (b.completedAt || b.timestamp) - (a.completedAt || a.timestamp));
