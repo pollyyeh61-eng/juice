@@ -53,7 +53,7 @@
                         <span class="w-2 h-6 bg-green-500 rounded-full"></span> 慢磨鮮榨．原汁原味
                     </h2>
                     <p class="text-sm text-stone-600 leading-relaxed font-medium">
-                        堅持慢磨技術，果渣分離保留最純粹維生素。承諾無糖、無水、無添加。
+                        堅持慢磨技術，果渣分離保留最純粹維生素。承諾無糖、無汁、無添加。
                     </p>
                 </div>
             </div>
@@ -135,7 +135,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const products = [
+        // 產品基本資料，價格會被動態更新覆蓋
+        let products = [
             { id: 'big_1', name: '大瓶 (單瓶)', price: 70, img: '1000026536.jpg' },
             { id: 'big_2', name: '大瓶 (2瓶優惠組)', price: 120, img: '1000026536.jpg' },
             { id: 'small_1', name: '小瓶 (單瓶)', price: 60, img: '2.png' },
@@ -146,36 +147,30 @@
         let businessStatus = "營業中";
         let deferredPrompt;
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            document.getElementById('pwa-install-btn').classList.remove('opacity-50');
+        // 監聽 Firebase Config (地點、狀態、價格)
+        db.ref('config').on('value', snap => {
+            const config = snap.val();
+            if(config) {
+                // 更新地點
+                document.getElementById('current-location').innerText = config.pickupLocation || "載入中...";
+                
+                // 更新價格
+                if(config.prices) {
+                    products = products.map(p => ({
+                        ...p,
+                        price: config.prices[p.id] || p.price
+                    }));
+                }
+
+                // 更新營業狀態
+                businessStatus = config.businessStatus || "營業中";
+                applyBusinessStatus();
+                
+                // 重新渲染畫面（確保價格變動時數字正確）
+                render();
+                updateCartUI();
+            }
         });
-
-        async function triggerPWAInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') deferredPrompt = null;
-            } else {
-                alert("請點選瀏覽器選單中的「加入主畫面」📲");
-            }
-        }
-
-        async function shareApp() {
-            if (navigator.share) {
-                navigator.share({ title: 'GUAVA HUB', text: '這家芭樂汁超好喝！', url: window.location.href });
-            } else {
-                alert("網址已複製到剪貼簿！");
-            }
-        }
-
-        window.onload = () => {
-            const savedOrderId = localStorage.getItem('lastOrderId');
-            if (savedOrderId) checkOrderExists(savedOrderId);
-            db.ref('config/pickupLocation').on('value', snap => { document.getElementById('current-location').innerText = snap.val() || "載入中..."; });
-            db.ref('config/businessStatus').on('value', snap => { businessStatus = snap.val() || "營業中"; applyBusinessStatus(); });
-            render();
-        };
 
         function applyBusinessStatus() {
             const badge = document.getElementById('status-badge');
@@ -185,6 +180,7 @@
             badge.className = "text-[10px] font-black px-2 py-0.5 rounded-md border";
             notice.classList.add('hidden');
             container.classList.remove('opacity-20', 'pointer-events-none');
+            
             if (businessStatus === "營業中") {
                 badge.innerText = "● 營業中"; badge.classList.add('bg-green-100', 'text-green-600', 'border-green-200');
             } else if (businessStatus === "已售完") {
@@ -237,24 +233,36 @@
             cart[id] = (cart[id] || 0) + change;
             if (cart[id] <= 0) delete cart[id];
             render();
+            updateCartUI();
+        }
+
+        function updateCartUI() {
             let total = 0, count = 0;
             Object.keys(cart).forEach(pid => {
                 const p = products.find(x => x.id === pid);
-                total += p.price * cart[pid];
-                count += cart[pid];
+                if(p) {
+                    total += p.price * cart[pid];
+                    count += cart[pid];
+                }
             });
             document.getElementById('total-price').innerText = total;
             const bar = document.getElementById('checkout-bar');
-            if (count > 0) { bar.classList.remove('translate-y-40'); bar.classList.add('translate-y-0'); }
-            else { bar.classList.add('translate-y-40'); }
+            if (count > 0 && businessStatus === "營業中") { 
+                bar.classList.remove('translate-y-40'); 
+                bar.classList.add('translate-y-0'); 
+            } else { 
+                bar.classList.add('translate-y-40'); 
+            }
         }
 
         function openDrawer() {
             const list = document.getElementById('summary-list');
             list.innerHTML = '';
             Object.keys(cart).forEach(id => {
-                const p = products.find(x => x.id === id); // 修正點
-                list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl text-sm"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
+                const p = products.find(x => x.id === id);
+                if(p) {
+                    list.innerHTML += `<div class="flex justify-between font-bold text-stone-700 bg-stone-50 p-4 rounded-2xl text-sm"><span>${p.name} x${cart[id]}</span><span>$${p.price * cart[id]}</span></div>`;
+                }
             });
             document.getElementById('overlay').classList.remove('hidden');
             setTimeout(() => { document.getElementById('overlay').style.opacity = '1'; document.getElementById('drawer').classList.add('drawer-up'); }, 10);
@@ -272,17 +280,27 @@
             if(!name) return alert("請輸入姓名！");
             const btn = document.getElementById('send-btn');
             btn.innerText = "正在傳送..."; btn.disabled = true;
-            const detail = Object.keys(cart).map(id => products.find(x => x.id === id).name + 'x' + cart[id]).join(', ');
+            
+            const detail = Object.keys(cart).map(id => {
+                const p = products.find(x => x.id === id);
+                return p.name + 'x' + cart[id];
+            }).join(', ');
+
             const newOrderRef = db.ref('orders').push();
             newOrderRef.set({
-                customer: name, items: detail, total: document.getElementById('total-price').innerText, 
-                pickup_time: time, status: 'pending', timestamp: Date.now()
+                customer: name, 
+                items: detail, 
+                total: document.getElementById('total-price').innerText, 
+                pickup_time: time, 
+                status: 'pending', 
+                timestamp: Date.now()
             }).then(() => { 
                 localStorage.setItem('lastOrderId', newOrderRef.key);
-                closeDrawer(); checkOrderExists(newOrderRef.key);
-                cart = {}; render();
-                document.getElementById('total-price').innerText = "0";
-                document.getElementById('checkout-bar').classList.add('translate-y-40');
+                closeDrawer(); 
+                checkOrderExists(newOrderRef.key);
+                cart = {}; 
+                render();
+                updateCartUI();
                 btn.innerText = "送出預約 🚀"; btn.disabled = false;
             });
         }
@@ -317,9 +335,38 @@
 
         function checkAuth(url) {
             if(sessionStorage.getItem('admin')==='ok') { window.location.href=url; return; }
-            if(prompt('管理員密碼')==='0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
+            const pw = prompt('管理員密碼');
+            if(pw === '0000') { sessionStorage.setItem('admin','ok'); window.location.href=url; }
         }
+
+        // PWA & Share
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            document.getElementById('pwa-install-btn').classList.remove('opacity-50');
+        });
+
+        async function triggerPWAInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') deferredPrompt = null;
+            } else {
+                alert("請點選瀏覽器選單中的「加入主畫面」📲");
+            }
+        }
+
+        async function shareApp() {
+            if (navigator.share) {
+                navigator.share({ title: 'GUAVA HUB', text: '這家芭樂汁超好喝！', url: window.location.href });
+            } else {
+                alert("網址已複製到剪貼簿！");
+            }
+        }
+
+        window.onload = () => {
+            const savedOrderId = localStorage.getItem('lastOrderId');
+            if (savedOrderId) checkOrderExists(savedOrderId);
+        };
     </script>
 </body>
 </html>
-
