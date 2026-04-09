@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>芭樂汁後台管理</title>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20">
+
+    <nav class="bg-[#1a2233] text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='index.html'" class="bg-[#3d4455] px-3 py-1 rounded text-sm flex items-center gap-1">🏠 返回前台</button>
+            <span class="text-[#4ade80] font-bold ml-2">ADMIN</span>
+        </div>
+        <div class="bg-[#111827] px-4 py-1 rounded-full border border-gray-700 text-sm">
+            今日狀態: <span id="currentStatusText" class="text-white">讀取中...</span>
+        </div>
+    </nav>
+
+    <div class="max-w-md mx-auto p-4 space-y-6">
+
+        <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-4 flex justify-between items-center text-stone-800">
+                📦 今日預購訂單
+                <span id="orderCount" class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+            </h2>
+            <div id="orderList" class="space-y-4 max-h-[600px] overflow-y-auto pr-1">
+                <p class="text-gray-400 text-sm text-center py-10">目前尚無預購訂單...</p>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-stone-800">💰 價格與地點設置</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div><label class="text-gray-400 text-[10px] block mb-1">大/單瓶</label><input type="number" id="price_big_single" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
+                <div><label class="text-gray-400 text-[10px] block mb-1">大/2瓶組</label><input type="number" id="price_big_double" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
+                <div><label class="text-gray-400 text-[10px] block mb-1">小/單瓶</label><input type="number" id="price_small_single" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
+                <div><label class="text-gray-400 text-[10px] block mb-1">小/2瓶組</label><input type="number" id="price_small_double" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <input type="text" id="market_name" placeholder="市場名稱" class="w-full bg-gray-50 rounded-xl p-3 text-sm">
+                <input type="text" id="market_pos" placeholder="位置/時間" class="w-full bg-gray-50 rounded-xl p-3 text-sm">
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <button onclick="setStatus('open')" id="btn_open" class="status-btn border py-2 rounded-xl text-xs font-bold bg-white">營業中</button>
+                <button onclick="setStatus('soldout')" id="btn_soldout" class="status-btn border py-2 rounded-xl text-xs font-bold bg-white">已售完</button>
+                <button onclick="setStatus('closed')" id="btn_closed" class="status-btn border py-2 rounded-xl text-xs font-bold bg-white">休息</button>
+            </div>
+            <button onclick="updateData()" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">同步至前台 🚀</button>
+        </section>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, query, limitToLast, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcZovSDeUlF-SbWrgXY74ZCK7t5-VSnj4",
+            authDomain: "studio-2370518507-ee5e3.firebaseapp.com",
+            databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
+            projectId: "studio-2370518507-ee5e3",
+            appId: "1:143237430916:web:e66f040d02930a1a7e8cd1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        let currentStatus = 'open';
+
+        // --- 1. 監聽預購訂單 (抓取照片、姓名、電話) ---
+        const ordersRef = query(ref(db, 'orders'), limitToLast(50));
+        onValue(ordersRef, (snapshot) => {
+            const listDiv = document.getElementById('orderList');
+            const data = snapshot.val();
+            if (!data) {
+                listDiv.innerHTML = '<p class="text-gray-400 text-sm text-center py-10">目前尚無預購訂單...</p>';
+                document.getElementById('orderCount').innerText = 0;
+                return;
+            }
+
+            const orders = Object.entries(data).reverse(); 
+            document.getElementById('orderCount').innerText = orders.length;
+            
+            listDiv.innerHTML = orders.map(([id, order]) => `
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${order.userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                                 class="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover bg-gray-200">
+                            <div>
+                                <p class="font-black text-stone-800 text-base leading-tight">${order.userName || '未知客戶'}</p>
+                                <p class="text-[11px] text-blue-600 font-bold mt-1">📞 ${order.userPhone || '無電話'}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                             <span class="text-[10px] text-gray-400 font-bold mb-1">${order.time ? order.time.split(' ')[1] : ''}</span>
+                             <button onclick="cancelOrder('${id}')" class="text-[10px] text-red-400 underline font-bold">取消訂單</button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-xs text-stone-500 mb-3 p-3 bg-white rounded-xl border border-stone-50">
+                        ${order.items ? order.items.map((item, idx) => `
+                            <div class="flex justify-between items-center mb-1">
+                                <span>• ${item.name}</span>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="editQty('${id}', ${idx}, -1)" class="w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center font-bold">-</button>
+                                    <span class="font-black text-stone-800 w-6 text-center"> ${item.qty}</span>
+                                    <button onclick="editQty('${id}', ${idx}, 1)" class="w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center font-bold">+</button>
+                                </div>
+                            </div>
+                        `).join('') : ''}
+                    </div>
+
+                    <div class="flex justify-between items-center border-t border-dashed border-gray-200 pt-3">
+                        <p class="text-xl font-black text-green-600">$${order.total}</p>
+                        <div class="flex gap-2">
+                            ${order.userPhone ? `
+                                <a href="tel:${order.userPhone}" class="bg-blue-500 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-md active:scale-90">
+                                    📱
+                                </a>
+                            ` : ''}
+                            <button onclick="completeOrder('${id}')" class="bg-orange-500 text-white px-5 py-2 rounded-full text-xs font-bold shadow-md active:scale-95 flex items-center gap-1">
+                                收銀歸檔 💰
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        });
+
+        // --- 2. 更改訂單數量 (與價格連動) ---
+        window.editQty = async function(orderId, itemIdx, delta) {
+            const orderSnap = await get(ref(db, `orders/${orderId}`));
+            if (!orderSnap.exists()) return;
+            const order = orderSnap.val();
+            
+            let newQty = order.items[itemIdx].qty + delta;
+            if (newQty < 1) return; 
+            
+            order.items[itemIdx].qty = newQty;
+            
+            // 抓取目前的價格設定來重新計算
+            const adminSnap = await get(ref(db, 'admin_settings'));
+            const prices = adminSnap.exists() ? adminSnap.val().prices : { big_s: 80, small_s: 50 };
+            
+            let newTotal = 0;
+            order.items.forEach(item => {
+                const unitPrice = item.name.includes('大') ? prices.big_s : prices.small_s;
+                newTotal += unitPrice * item.qty;
+            });
+            
+            update(ref(db, `orders/${orderId}`), {
+                items: order.items,
+                total: newTotal
+            });
+        };
+
+        // --- 3. 取消訂單 ---
+        window.cancelOrder = function(orderId) {
+            if (confirm("確定要取消這筆預購訂單嗎？資料將會從清單中移除。")) {
+                remove(ref(db, `orders/${orderId}`));
+            }
+        };
+
+        // --- 4. 收銀歸檔 (將訂單移至 history_orders) ---
+        window.completeOrder = async function(orderId) {
+            const orderSnap = await get(ref(db, `orders/${orderId}`));
+            if (!orderSnap.exists()) return;
+            
+            const orderData = orderSnap.val();
+            orderData.status = "已完成";
+            orderData.completedTime = new Date().toLocaleString();
+
+            // 1. 存入歷史歸檔
+            await set(ref(db, `history_orders/${orderId}`), orderData);
+            // 2. 從今日預購中移除
+            await remove(ref(db, `orders/${orderId}`));
+            
+            alert("結帳完成！訂單已存入歷史歸檔。");
+        };
+
+        // --- 5. 管理功能 (同步價格與狀態) ---
+        const adminRef = ref(db, 'admin_settings');
+        onValue(adminRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.prices) {
+                    document.getElementById('price_big_single').value = data.prices.big_s || 0;
+                    document.getElementById('price_big_double').value = data.prices.big_d || 0;
+                    document.getElementById('price_small_single').value = data.prices.small_s || 0;
+                    document.getElementById('price_small_double').value = data.prices.small_d || 0;
+                }
+                if (data.location) {
+                    document.getElementById('market_name').value = data.location.name || "";
+                    document.getElementById('market_pos').value = data.location.pos || "";
+                }
+                currentStatus = data.status || 'open';
+                updateStatusUI(currentStatus);
+            }
+        });
+
+        window.updateData = function() {
+            set(adminRef, {
+                prices: {
+                    big_s: document.getElementById('price_big_single').value,
+                    big_d: document.getElementById('price_big_double').value,
+                    small_s: document.getElementById('price_small_single').value,
+                    small_d: document.getElementById('price_small_double').value,
+                },
+                location: {
+                    name: document.getElementById('market_name').value,
+                    pos: document.getElementById('market_pos').value,
+                },
+                status: currentStatus,
+                lastUpdated: new Date().getTime()
+            }).then(() => alert("資料同步成功！"));
+        };
+
+        window.setStatus = function(s) { currentStatus = s; updateStatusUI(s); };
+
+        function updateStatusUI(status) {
+            document.querySelectorAll('.status-btn').forEach(b => b.className = "status-btn border py-2 rounded-xl text-xs font-bold bg-white text-gray-400 border-gray-100");
+            const active = document.getElementById('btn_' + status);
+            if(active) active.className = "status-btn border py-2 rounded-xl text-xs font-bold bg-green-50 text-green-600 border-green-500 ring-2 ring-green-100";
+            document.getElementById('currentStatusText').innerText = status === 'open' ? '🟢 營業中' : status === 'soldout' ? '🟡 已售完' : '🔴 結束營業';
+        }
+    </script>
+</body>
+</html>
