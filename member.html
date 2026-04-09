@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GUAVA HUB | 會員中心 👤</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; font-family: sans-serif; }
+        .btn-active:active { transform: scale(0.95); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-[#F8F9FA] min-h-screen pb-20">
+
+    <nav class="max-w-md mx-auto p-6 flex items-center justify-between">
+        <a href="index.html" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-stone-400 border border-stone-100 btn-active">←</a>
+        <h1 class="text-xl font-black text-stone-800 italic">MEMBER HUB</h1>
+        <div class="w-10"></div>
+    </nav>
+
+    <main class="max-w-md mx-auto px-6">
+        
+        <div class="text-center mb-8">
+            <div class="relative inline-block">
+                <img id="display-photo" src="https://via.placeholder.com/150" class="w-28 h-28 rounded-[2.5rem] object-cover border-4 border-white shadow-xl mx-auto">
+                <label for="photo-upload" class="absolute bottom-0 right-0 bg-green-500 text-white w-8 h-8 rounded-xl flex items-center justify-center border-2 border-white shadow-lg cursor-pointer">
+                    📸
+                </label>
+                <input type="file" id="photo-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
+            </div>
+            <div id="welcome-text" class="mt-4 px-4">
+                <div id="user-badge" class="inline-block px-3 py-1 rounded-full text-[10px] font-black mb-2 shadow-sm">載入中...</div>
+                <h2 id="display-name" class="text-xl font-black text-stone-700">讀取中...</h2>
+                <p id="cheer-text" class="text-sm text-green-600 font-bold italic mt-1 leading-tight"></p>
+                <p id="display-phone-text" class="text-[10px] text-stone-400 font-bold mt-2"></p>
+            </div>
+        </div>
+
+        <section id="registration-section" class="space-y-4 mb-8 hidden">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100">
+                <h3 class="text-xs font-black text-stone-400 mb-4 px-2 tracking-widest">完善您的資料</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black text-stone-400 ml-2 mb-1 block">會員姓名 NAME</label>
+                        <input type="text" id="user-name" placeholder="請輸入真實姓名" class="w-full bg-stone-50 border-none p-4 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-stone-400 ml-2 mb-1 block">手機號碼 PHONE</label>
+                        <input type="tel" id="user-phone" placeholder="請輸入聯絡電話" class="w-full bg-stone-50 border-none p-4 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
+                    <div class="flex items-center gap-2 px-2 py-2">
+                        <input type="checkbox" id="privacy-check" class="w-4 h-4 text-green-500 border-stone-300 rounded focus:ring-green-500">
+                        <label for="privacy-check" class="text-[11px] text-stone-500 font-bold">
+                            我同意 <span onclick="openPrivacy()" class="text-green-600 underline cursor-pointer">個資保護條款</span>
+                        </label>
+                    </div>
+                </div>
+                <button onclick="saveProfile()" class="w-full mt-4 bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm btn-active shadow-lg">儲存並開始健康生活</button>
+            </div>
+        </section>
+
+        <div class="flex justify-between items-center mb-4 px-2">
+            <h3 class="text-sm font-black text-stone-800 italic">ORDER HISTORY</h3>
+            <button onclick="toggleEdit()" class="text-[10px] font-bold text-stone-400 underline">修改個人資料</button>
+        </div>
+        <div id="order-list" class="space-y-3"></div>
+
+        <button onclick="logout()" class="w-full mt-12 py-4 text-red-400 font-bold text-xs border border-red-100 rounded-2xl btn-active">登出帳號</button>
+    </main>
+
+    <div id="privacy-modal" class="fixed inset-0 bg-black/50 z-[200] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 max-h-[70vh] overflow-y-auto">
+            <h3 class="text-xl font-black mb-4 text-stone-800">個資保護條款</h3>
+            <div class="text-sm text-stone-500 leading-relaxed space-y-2">
+                <p>1. 本店為提供產品預約服務，需請您提供姓名與電話。</p>
+                <p>2. 所收集之資訊僅用於確認訂單及通知取貨。</p>
+                <p>3. 您可隨時要求查詢、修正或刪除您的個人資料。</p>
+            </div>
+            <button onclick="closePrivacy()" class="w-full mt-6 bg-green-500 text-white py-3 rounded-xl font-bold btn-active">我明白了</button>
+        </div>
+    </div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyDcZovSDeUlF-SbWrgXY74ZCK7t5-VSnj4",
+    authDomain: "studio-2370518507-ee5e3.firebaseapp.com",
+    databaseURL: "https://studio-2370518507-ee5e3-default-rtdb.firebaseio.com",
+    projectId: "studio-2370518507-ee5e3",
+    appId: "1:143237430916:web:e66f040d02930a1a7e8cd1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+let currentUid = null;
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUid = user.uid;
+        document.getElementById('display-photo').src = user.photoURL || 'https://via.placeholder.com/150';
+        
+        // 1. 先抓取會員基本資料
+        db.ref('users/' + user.uid).once('value', snap => {
+            const data = snap.val();
+            if (data && data.phone && data.privacyAgreed) {
+                document.getElementById('registration-section').classList.add('hidden');
+                document.getElementById('display-name').innerText = data.displayName || user.displayName;
+                document.getElementById('display-phone-text').innerText = "📞 " + data.phone;
+                document.getElementById('user-name').value = data.displayName || user.displayName;
+                document.getElementById('user-phone').value = data.phone;
+                document.getElementById('privacy-check').checked = true;
+                
+                // 2. 判定顧客等級並加上加油語詞
+                checkUserLevel(user.email);
+            } else {
+                document.getElementById('registration-section').classList.remove('hidden');
+                document.getElementById('display-name').innerText = user.displayName || "新朋友";
+                document.getElementById('user-badge').innerText = "NEW FRIEND";
+                document.getElementById('user-badge').className = "inline-block px-3 py-1 rounded-full text-[10px] font-black mb-2 shadow-sm bg-gray-100 text-gray-500";
+                document.getElementById('cheer-text').innerText = "歡迎來到數位王國！給自己一個健康的開始吧 ✨";
+            }
+        });
+        loadMyOrders(user.email);
+    } else {
+        window.location.href = 'index.html'; 
+    }
+});
+
+// --- 顧客三級判定系統 ---
+function checkUserLevel(email) {
+    db.ref('orders').orderByChild('email').equalTo(email).once('value', snap => {
+        const orderCount = snap.numChildren(); // 取得該會員的總訂單數
+        const badge = document.getElementById('user-badge');
+        const cheer = document.getElementById('cheer-text');
+
+        if (orderCount >= 10) {
+            // 第 3 級：連續買過 10 次以上 (VIP)
+            badge.innerText = "👑 核心摯友";
+            badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-black mb-2 shadow-sm bg-orange-500 text-white";
+            cheer.innerText = "「第 " + orderCount + " 次見面！感謝您對健康的堅持，您的肯定是我前進的動力 💪」";
+        } 
+        else if (orderCount >= 1) {
+            // 第 2 級：註冊買過一次
+            badge.innerText = "🍃 健康夥伴";
+            badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-black mb-2 shadow-sm bg-green-500 text-white";
+            cheer.innerText = "「很高興再次見到您！今天也要來一瓶慢磨芭樂汁補充滿滿維他命嗎？🍋」";
+        } 
+        else {
+            // 第 1 級：註冊還沒買過
+            badge.innerText = "🌱 探索會員";
+            badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-black mb-2 shadow-sm bg-blue-100 text-blue-500";
+            cheer.innerText = "「還在觀望嗎？今天就試試看，這份原味絕對值得您的第一張訂單！🍹」";
+        }
+    });
+}
+
+function toggleEdit() { document.getElementById('registration-section').classList.toggle('hidden'); }
+function openPrivacy() { document.getElementById('privacy-modal').classList.remove('hidden'); }
+function closePrivacy() { document.getElementById('privacy-modal').classList.add('hidden'); }
+
+function saveProfile() {
+    const newName = document.getElementById('user-name').value.trim();
+    const newPhone = document.getElementById('user-phone').value.trim();
+    const privacyAgreed = document.getElementById('privacy-check').checked;
+
+    if (!newName || !newPhone || !privacyAgreed) { alert("請填好姓名、電話並同意條款喔！"); return; }
+
+    db.ref('users/' + currentUid).update({
+        displayName: newName,
+        phone: newPhone,
+        privacyAgreed: true,
+        lastUpdated: new Date().toLocaleString()
+    }).then(() => {
+        alert("資料儲存成功！");
+        location.reload(); // 重新整理以觸發等級判定
+    });
+}
+
+function loadMyOrders(email) {
+    db.ref('orders').orderByChild('email').equalTo(email).on('value', snap => {
+        const container = document.getElementById('order-list');
+        const orders = [];
+        snap.forEach(child => { orders.push(child.val()); });
+        orders.reverse();
+
+        if (orders.length === 0) {
+            container.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center text-xs text-stone-300 border border-stone-50 italic">尚未有預約紀錄</div>`;
+            return;
+        }
+        container.innerHTML = orders.map(o => `
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-stone-100 flex justify-between items-center">
+                <div>
+                    <div class="text-[10px] text-stone-400 font-bold mb-1">${o.time}</div>
+                    <div class="text-sm font-black text-stone-700">${o.items ? o.items.map(i => i.name + 'x' + i.qty).join(', ') : '明細錯誤'}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-green-600 font-black mb-1">$${o.total}</div>
+                    <span class="text-[10px] px-2 py-0.5 bg-green-50 text-green-500 rounded-full font-bold">${o.status || '待處理'}</span>
+                </div>
+            </div>
+        `).join('');
+    });
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => { document.getElementById('display-photo').src = e.target.result; }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function logout() { if(confirm("確定要登出嗎？")) auth.signOut(); }
+</script>
+</body>
+</html>
