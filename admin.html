@@ -5,50 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>芭樂汁後台管理</title>
+    <style>
+        /* 針對輸入框焦點加強視覺提示 */
+        input:focus {
+            border-color: #4ade80 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.1);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen pb-20">
+<body class="bg-gray-100 min-h-screen pb-20">
 
     <nav class="bg-[#1a2233] text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
         <div class="flex items-center gap-2">
-            <button onclick="window.location.href='index.html'" class="bg-[#3d4455] px-3 py-1 rounded text-sm flex items-center gap-1">🏠 返回前台</button>
-            <span class="text-[#4ade80] font-bold ml-2">ADMIN</span>
+            <button onclick="window.location.href='index.html'" class="bg-[#3d4455] px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1">🏠 返回前台</button>
+            <span class="text-[#4ade80] font-black ml-2 tracking-tighter">ADMIN</span>
         </div>
-        <div class="bg-[#111827] px-4 py-1 rounded-full border border-gray-700 text-sm">
+        <div class="bg-[#111827] px-4 py-2 rounded-full border border-gray-700 text-sm font-bold">
             今日狀態: <span id="currentStatusText" class="text-white">讀取中...</span>
         </div>
     </nav>
 
     <div class="max-w-md mx-auto p-4 space-y-6">
 
-        <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-            <h2 class="text-xl font-bold mb-4 flex justify-between items-center text-stone-800">
+        <section class="bg-white rounded-[2rem] p-6 shadow-md border border-gray-200">
+            <h2 class="text-2xl font-black mb-4 flex justify-between items-center text-stone-900">
                 📦 今日預購訂單
-                <span id="orderCount" class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+                <span id="orderCount" class="bg-red-500 text-white text-sm px-3 py-1 rounded-full">0</span>
             </h2>
             <div id="orderList" class="space-y-4 max-h-[600px] overflow-y-auto pr-1">
-                <p class="text-gray-400 text-sm text-center py-10">目前尚無預購訂單...</p>
+                <p class="text-gray-400 text-center py-10">目前尚無預購訂單...</p>
             </div>
         </section>
 
-        <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-            <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-stone-800">💰 價格與地點設置</h2>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div><label class="text-gray-400 text-[10px] block mb-1">大/單瓶</label><input type="number" id="price_big_single" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
-                <div><label class="text-gray-400 text-[10px] block mb-1">大/2瓶組</label><input type="number" id="price_big_double" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
-                <div><label class="text-gray-400 text-[10px] block mb-1">小/單瓶</label><input type="number" id="price_small_single" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
-                <div><label class="text-gray-400 text-[10px] block mb-1">小/2瓶組</label><input type="number" id="price_small_double" class="w-full bg-gray-50 rounded-xl p-3 font-bold"></div>
+        <section class="bg-white rounded-[2rem] p-6 shadow-md border border-gray-200">
+            <h2 class="text-2xl font-black mb-8 flex items-center gap-2 text-stone-900">💰 價格與地點設置</h2>
+            
+            <p class="text-sm font-black text-green-700 mb-3 bg-green-50 inline-block px-3 py-1 rounded-lg">🍹 芭樂汁價格設定</p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div>
+                    <label class="text-stone-900 text-sm font-black block mb-2 ml-1">大/單瓶</label>
+                    <input type="number" id="price_big_single" class="w-full bg-gray-50 rounded-2xl p-4 text-xl font-black border-2 border-gray-100 shadow-inner">
+                </div>
+                <div>
+                    <label class="text-stone-900 text-sm font-black block mb-2 ml-1">大/2瓶組</label>
+                    <input type="number" id="price_big_double" class="w-full bg-gray-50 rounded-2xl p-4 text-xl font-black border-2 border-gray-100 shadow-inner">
+                </div>
+                <div>
+                    <label class="text-stone-900 text-sm font-black block mb-2 ml-1">小/單瓶</label>
+                    <input type="number" id="price_small_single" class="w-full bg-gray-50 rounded-2xl p-4 text-xl font-black border-2 border-gray-100 shadow-inner">
+                </div>
+                <div>
+                    <label class="text-stone-900 text-sm font-black block mb-2 ml-1">小/2瓶組</label>
+                    <input type="number" id="price_small_double" class="w-full bg-gray-50 rounded-2xl p-4 text-xl font-black border-2 border-gray-100 shadow-inner">
+                </div>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <input type="text" id="market_name" placeholder="市場名稱" class="w-full bg-gray-50 rounded-xl p-3 text-sm">
-                <input type="text" id="market_pos" placeholder="位置/時間" class="w-full bg-gray-50 rounded-xl p-3 text-sm">
+
+            <p class="text-sm font-black text-orange-700 mb-3 bg-orange-50 inline-block px-3 py-1 rounded-lg"> Melon 榴槤價格設定</p>
+            <div class="grid grid-cols-3 gap-2 mb-8">
+                <div>
+                    <label class="text-stone-900 text-[12px] font-black block mb-2 ml-1 text-center">榴槤/1個</label>
+                    <input type="number" id="price_d1" class="w-full bg-gray-50 rounded-2xl p-4 text-xl font-black border-2 border-gray-100 shadow-inner text-center">
+                </div>
+                <div>
+                    <label class="text-stone-900 text-[12px] font-black block mb-2 ml-1 text-center">榴槤/2個</label>
+                    <input type="number" id="price_d2" class="w-full bg-gray-50 rounded-2xl p-4 text-xl font-black border-2 border-gray-100 shadow-inner text-center">
+                </div>
+                <div>
+                    <label class="text-stone-900 text-[12px] font-black block mb-2 ml-1 text-center">榴槤/3個</label>
+                    <input type="number" id="price_d3" class="w-full bg-gray-50 rounded-2xl p-4 text-xl font-black border-2 border-gray-100 shadow-inner text-center">
+                </div>
+            </div>
+
+            <p class="text-sm font-black text-stone-700 mb-3 bg-stone-100 inline-block px-3 py-1 rounded-lg">📍 擺攤位置設定</p>
+            <div class="grid grid-cols-1 gap-4 mb-8">
+                <div>
+                    <label class="text-stone-900 text-sm font-black block mb-2 ml-1">市場名稱</label>
+                    <input type="text" id="market_name" placeholder="例如：三民市場" class="w-full bg-gray-50 rounded-2xl p-4 text-lg font-bold border-2 border-gray-100 shadow-inner">
+                </div>
+                <div>
+                    <label class="text-stone-900 text-sm font-black block mb-2 ml-1">具體位置 / 營業時間</label>
+                    <input type="text" id="market_pos" placeholder="例如：自強路口 (08:00~12:00)" class="w-full bg-gray-50 rounded-2xl p-4 text-lg font-bold border-2 border-gray-100 shadow-inner">
+                </div>
             </div>
             
-            <div class="grid grid-cols-3 gap-2 mb-4">
-                <button onclick="setStatus('open')" id="btn_open" class="status-btn border py-2 rounded-xl text-xs font-bold bg-white">營業中</button>
-                <button onclick="setStatus('soldout')" id="btn_soldout" class="status-btn border py-2 rounded-xl text-xs font-bold bg-white">已售完</button>
-                <button onclick="setStatus('closed')" id="btn_closed" class="status-btn border py-2 rounded-xl text-xs font-bold bg-white">休息</button>
+            <label class="text-stone-900 text-sm font-black block mb-2 ml-1">切換今日營業狀態</label>
+            <div class="grid grid-cols-3 gap-3 mb-8">
+                <button onclick="setStatus('open')" id="btn_open" class="status-btn border-2 py-4 rounded-2xl text-md font-black bg-white">營業中</button>
+                <button onclick="setStatus('soldout')" id="btn_soldout" class="status-btn border-2 py-4 rounded-2xl text-md font-black bg-white">已售完</button>
+                <button onclick="setStatus('closed')" id="btn_closed" class="status-btn border-2 py-4 rounded-2xl text-md font-black bg-white">休息</button>
             </div>
-            <button onclick="updateData()" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">同步至前台 🚀</button>
+
+            <button onclick="updateData()" class="w-full bg-green-600 text-white py-5 rounded-[2rem] text-xl font-black shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                儲存並同步設置 🚀
+            </button>
         </section>
     </div>
 
@@ -66,164 +116,107 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        let currentStatus = 'open';
 
-        // --- 1. 監聽預購訂單 (抓取照片、姓名、電話) ---
-        const ordersRef = query(ref(db, 'orders'), limitToLast(50));
-        onValue(ordersRef, (snapshot) => {
+        onValue(query(ref(db, 'orders'), limitToLast(50)), (snapshot) => {
             const listDiv = document.getElementById('orderList');
             const data = snapshot.val();
             if (!data) {
-                listDiv.innerHTML = '<p class="text-gray-400 text-sm text-center py-10">目前尚無預購訂單...</p>';
+                listDiv.innerHTML = '<p class="text-gray-400 text-center py-10 font-bold">目前尚無預購訂單...</p>';
                 document.getElementById('orderCount').innerText = 0;
                 return;
             }
-
             const orders = Object.entries(data).reverse(); 
             document.getElementById('orderCount').innerText = orders.length;
-            
             listDiv.innerHTML = orders.map(([id, order]) => `
-                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+                <div class="bg-stone-50 p-5 rounded-[1.5rem] border-2 border-white shadow-sm mb-4">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex items-center gap-3">
-                            <img src="${order.userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
-                                 class="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover bg-gray-200">
+                            <img src="${order.userPhoto || ''}" class="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover">
                             <div>
-                                <p class="font-black text-stone-800 text-base leading-tight">${order.userName || '未知客戶'}</p>
-                                <p class="text-[11px] text-blue-600 font-bold mt-1">📞 ${order.userPhone || '無電話'}</p>
+                                <p class="font-black text-lg text-stone-900">${order.userName || '客戶'}</p>
+                                <p class="text-sm font-bold text-blue-600">${order.userPhone || ''}</p>
                             </div>
                         </div>
-                        <div class="flex flex-col items-end">
-                             <span class="text-[10px] text-gray-400 font-bold mb-1">${order.time ? order.time.split(' ')[1] : ''}</span>
-                             <button onclick="cancelOrder('${id}')" class="text-[10px] text-red-400 underline font-bold">取消訂單</button>
-                        </div>
+                        <button onclick="cancelOrder('${id}')" class="text-sm text-red-500 font-black px-2 py-1 bg-red-50 rounded-lg">取消</button>
                     </div>
-                    
-                    <div class="text-xs text-stone-500 mb-3 p-3 bg-white rounded-xl border border-stone-50">
-                        ${order.items ? order.items.map((item, idx) => `
-                            <div class="flex justify-between items-center mb-1">
-                                <span>• ${item.name}</span>
-                                <div class="flex items-center gap-2">
-                                    <button onclick="editQty('${id}', ${idx}, -1)" class="w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center font-bold">-</button>
-                                    <span class="font-black text-stone-800 w-6 text-center"> ${item.qty}</span>
-                                    <button onclick="editQty('${id}', ${idx}, 1)" class="w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center font-bold">+</button>
-                                </div>
-                            </div>
-                        `).join('') : ''}
+                    <div class="text-md font-bold text-stone-600 bg-white p-3 rounded-xl border border-stone-100 mb-3">
+                        ${order.items ? order.items.map(i => `<div class="flex justify-between"><span>• ${i.name}</span> <span>x ${i.qty}</span></div>`).join('') : ''}
                     </div>
-
-                    <div class="flex justify-between items-center border-t border-dashed border-gray-200 pt-3">
-                        <p class="text-xl font-black text-green-600">$${order.total}</p>
-                        <div class="flex gap-2">
-                            ${order.userPhone ? `
-                                <a href="tel:${order.userPhone}" class="bg-blue-500 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-md active:scale-90">
-                                    📱
-                                </a>
-                            ` : ''}
-                            <button onclick="completeOrder('${id}')" class="bg-orange-500 text-white px-5 py-2 rounded-full text-xs font-bold shadow-md active:scale-95 flex items-center gap-1">
-                                收銀歸檔 💰
-                            </button>
-                        </div>
+                    <div class="flex justify-between items-center">
+                        <p class="font-black text-2xl text-green-600">$${order.total}</p>
+                        <button onclick="completeOrder('${id}')" class="bg-orange-500 text-white px-6 py-3 rounded-full text-md font-black shadow-lg active:scale-95 transition-all">收銀歸檔 💰</button>
                     </div>
                 </div>
             `).join('');
         });
 
-        // --- 2. 更改訂單數量 (與價格連動) ---
-        window.editQty = async function(orderId, itemIdx, delta) {
-            const orderSnap = await get(ref(db, `orders/${orderId}`));
-            if (!orderSnap.exists()) return;
-            const order = orderSnap.val();
-            
-            let newQty = order.items[itemIdx].qty + delta;
-            if (newQty < 1) return; 
-            
-            order.items[itemIdx].qty = newQty;
-            
-            // 抓取目前的價格設定來重新計算
-            const adminSnap = await get(ref(db, 'admin_settings'));
-            const prices = adminSnap.exists() ? adminSnap.val().prices : { big_s: 80, small_s: 50 };
-            
-            let newTotal = 0;
-            order.items.forEach(item => {
-                const unitPrice = item.name.includes('大') ? prices.big_s : prices.small_s;
-                newTotal += unitPrice * item.qty;
-            });
-            
-            update(ref(db, `orders/${orderId}`), {
-                items: order.items,
-                total: newTotal
-            });
-        };
-
-        // --- 3. 取消訂單 ---
-        window.cancelOrder = function(orderId) {
-            if (confirm("確定要取消這筆預購訂單嗎？資料將會從清單中移除。")) {
-                remove(ref(db, `orders/${orderId}`));
-            }
-        };
-
-        // --- 4. 收銀歸檔 (將訂單移至 history_orders) ---
         window.completeOrder = async function(orderId) {
-            const orderSnap = await get(ref(db, `orders/${orderId}`));
-            if (!orderSnap.exists()) return;
-            
-            const orderData = orderSnap.val();
-            orderData.status = "已完成";
-            orderData.completedTime = new Date().toLocaleString();
-
-            // 1. 存入歷史歸檔
-            await set(ref(db, `history_orders/${orderId}`), orderData);
-            // 2. 從今日預購中移除
-            await remove(ref(db, `orders/${orderId}`));
-            
-            alert("結帳完成！訂單已存入歷史歸檔。");
+            try {
+                const snap = await get(ref(db, `orders/${orderId}`));
+                if (snap.exists()) {
+                    const orderData = snap.val();
+                    const now = new Date().toLocaleString();
+                    await set(ref(db, `history_orders/${orderId}`), { ...orderData, completedTime: now, status: "已完成" });
+                    await set(ref(db, 'pos_sync'), { orderId: orderId, amount: orderData.total, timestamp: Date.now(), msg: "預購轉現場結帳" });
+                    await remove(ref(db, `orders/${orderId}`));
+                    alert("歸檔成功！");
+                }
+            } catch (err) { alert("收銀失敗"); }
         };
 
-        // --- 5. 管理功能 (同步價格與狀態) ---
-        const adminRef = ref(db, 'admin_settings');
-        onValue(adminRef, (snapshot) => {
+        window.cancelOrder = (id) => { if(confirm("確定取消這筆訂單嗎？")) remove(ref(db, `orders/${id}`)); };
+
+        onValue(ref(db, 'admin_settings'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                if (data.prices) {
+                if(data.prices){
                     document.getElementById('price_big_single').value = data.prices.big_s || 0;
                     document.getElementById('price_big_double').value = data.prices.big_d || 0;
                     document.getElementById('price_small_single').value = data.prices.small_s || 0;
                     document.getElementById('price_small_double').value = data.prices.small_d || 0;
+                    document.getElementById('price_d1').value = data.prices.d1 || 250;
+                    document.getElementById('price_d2').value = data.prices.d2 || 500;
+                    document.getElementById('price_d3').value = data.prices.d3 || 750;
                 }
-                if (data.location) {
-                    document.getElementById('market_name').value = data.location.name || "";
-                    document.getElementById('market_pos').value = data.location.pos || "";
+                if(data.location){
+                    document.getElementById('market_name').value = data.location.name || '';
+                    document.getElementById('market_pos').value = data.location.pos || '';
                 }
-                currentStatus = data.status || 'open';
-                updateStatusUI(currentStatus);
+                updateStatusUI(data.status || 'open');
             }
         });
 
-        window.updateData = function() {
-            set(adminRef, {
+        window.updateData = () => {
+            update(ref(db, 'admin_settings'), {
                 prices: {
                     big_s: document.getElementById('price_big_single').value,
                     big_d: document.getElementById('price_big_double').value,
                     small_s: document.getElementById('price_small_single').value,
                     small_d: document.getElementById('price_small_double').value,
+                    d1: document.getElementById('price_d1').value,
+                    d2: document.getElementById('price_d2').value,
+                    d3: document.getElementById('price_d3').value
                 },
                 location: {
                     name: document.getElementById('market_name').value,
                     pos: document.getElementById('market_pos').value,
-                },
-                status: currentStatus,
-                lastUpdated: new Date().getTime()
-            }).then(() => alert("資料同步成功！"));
+                }
+            }).then(() => alert("✅ 設置已成功同步！"));
         };
 
-        window.setStatus = function(s) { currentStatus = s; updateStatusUI(s); };
+        window.setStatus = (s) => update(ref(db, 'admin_settings'), { status: s });
 
         function updateStatusUI(status) {
-            document.querySelectorAll('.status-btn').forEach(b => b.className = "status-btn border py-2 rounded-xl text-xs font-bold bg-white text-gray-400 border-gray-100");
+            document.querySelectorAll('.status-btn').forEach(b => {
+                b.className = "status-btn border-2 border-gray-100 py-4 rounded-2xl text-md font-black bg-white text-gray-300";
+            });
             const active = document.getElementById('btn_' + status);
-            if(active) active.className = "status-btn border py-2 rounded-xl text-xs font-bold bg-green-50 text-green-600 border-green-500 ring-2 ring-green-100";
-            document.getElementById('currentStatusText').innerText = status === 'open' ? '🟢 營業中' : status === 'soldout' ? '🟡 已售完' : '🔴 結束營業';
+            if(active) {
+                if(status === 'open') active.className = "status-btn border-2 border-green-500 py-4 rounded-2xl text-md font-black bg-green-50 text-green-700 shadow-sm";
+                if(status === 'soldout') active.className = "status-btn border-2 border-orange-500 py-4 rounded-2xl text-md font-black bg-orange-50 text-orange-700 shadow-sm";
+                if(status === 'closed') active.className = "status-btn border-2 border-red-500 py-4 rounded-2xl text-md font-black bg-red-50 text-red-700 shadow-sm";
+            }
+            document.getElementById('currentStatusText').innerText = status === 'open' ? '🟢 營業中' : status === 'soldout' ? '🟡 已售完' : '🔴 休息中';
         }
     </script>
 </body>
