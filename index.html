@@ -12,69 +12,70 @@
     <style>
         body { -webkit-tap-highlight-color: transparent; font-family: sans-serif; }
         .btn-active:active { transform: scale(0.95); }
+        .product-card { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input[type="time"] { font-size: 1.25rem !important; color: #1c1917; }
     </style>
 </head>
-<body class="bg-[#F8F9FA] min-h-screen">
+<body class="bg-[#F2F4F7] min-h-screen">
 
     <main class="max-w-md mx-auto p-4 pb-48"> 
         <div class="flex flex-col mb-6">
             <div class="flex justify-between items-start w-full">
                 <div class="flex items-center gap-2">
-                    <h1 class="text-3xl font-black text-green-500 italic tracking-tighter">芭樂汁預購</h1>
+                    <h1 class="text-3xl font-black text-green-600 italic tracking-tighter">芭樂汁預購</h1>
                     <span class="text-2xl">🍹</span>
                 </div>
                 
-                <div class="flex flex-col items-end gap-1 text-right">
-                    <div id="auth-section" class="mb-2">
-                        <button onclick="login()" class="bg-white px-3 py-1.5 rounded-full shadow-sm border border-stone-100 text-[10px] font-bold text-stone-500 btn-active">👤 會員登入</button>
-                    </div>
-                    <div id="status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">狀態讀取中</div>
+                <div id="auth-section" class="flex flex-col items-end gap-1 text-right">
+                    <button onclick="login()" class="bg-white px-4 py-2 rounded-full shadow-md border border-stone-200 text-sm font-bold text-stone-800 btn-active">👤 會員登入</button>
+                    <div id="status-badge" class="text-xs font-black px-3 py-1 rounded-full bg-gray-200 text-gray-600 mt-2 shadow-sm border border-white">狀態讀取中</div>
                 </div>
             </div>
 
-            <div class="mt-3 bg-orange-50 p-3 rounded-2xl border border-orange-100">
-                <p class="text-[11px] font-bold text-orange-600 leading-relaxed">
+            <div class="mt-4 bg-orange-50 p-4 rounded-2xl border-2 border-orange-200 shadow-sm">
+                <p class="text-sm font-black text-orange-700 leading-relaxed italic">
                     親愛的顧客，開放預購明天的訂單，請您填好訂單並準時領取產品，謝謝。
                 </p>
             </div>
 
-<div class="flex items-center gap-3 bg-[#E8F5E9] px-4 py-2 rounded-full border border-green-100 mt-3 w-fit">
-                <div class="bg-green-500 text-white text-[10px] px-2 py-1 rounded-full font-bold leading-none text-center flex-shrink-0">取貨點</div>
-                <div class="flex items-center gap-2 whitespace-nowrap"> 
-                    <span id="display-location" class="text-[11px] font-bold text-stone-600 italic">讀取中...</span>
-                    <span id="display-time" class="text-[10px] text-stone-400 italic font-medium">讀取時間中...</span>
+            <div class="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border-2 border-green-500 mt-4 w-full shadow-sm">
+                <div class="bg-green-600 text-white text-xs px-2 py-1.5 rounded-lg font-black leading-none text-center flex-shrink-0">取貨點</div>
+                <div class="flex flex-col"> 
+                    <span id="display-location" class="text-md font-black text-stone-900">讀取中...</span>
+                    <span id="display-time" class="text-xs text-stone-600 font-bold italic"></span>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-4 gap-2 mb-8">
-            <button id="installBtn" onclick="installPWA()" class="bg-red-50 py-3 rounded-xl flex flex-col items-center border border-red-100 btn-active" style="display: none;">
-                <span class="text-xs font-bold text-red-500">📲 下載</span>
+        <div class="grid grid-cols-5 gap-2 mb-8">
+            <button id="installBtn" onclick="installPWA()" class="bg-red-50 py-3 rounded-xl flex flex-col items-center border border-red-200 btn-active shadow-sm" style="display: none;">
+                <span class="text-xs font-black text-red-600">📲 下載</span>
             </button>
-            <button onclick="copyLink()" class="bg-blue-50 py-3 rounded-xl flex flex-col items-center border border-blue-100 btn-active">
-                <span class="text-xs font-bold text-blue-500">🔗 分享</span>
+            <button onclick="copyLink()" class="bg-blue-50 py-3 rounded-xl flex flex-col items-center border border-blue-200 btn-active shadow-sm">
+                <span class="text-xs font-black text-blue-600">🔗 分享</span>
             </button>
-            <button onclick="checkAuth('pos.html')" class="bg-orange-50 py-3 rounded-xl flex flex-col items-center border border-orange-100 btn-active text-center">
-                <span class="text-xs font-bold text-orange-500">💰 收銀</span>
+            <button onclick="checkAuth('upload.html')" class="bg-purple-50 py-3 rounded-xl flex flex-col items-center border border-purple-200 btn-active text-center shadow-sm">
+                <span class="text-xs font-black text-purple-600">🚀 上架</span>
             </button>
-            <button onclick="checkAuth('admin.html')" class="bg-green-50 py-3 rounded-xl flex flex-col items-center border border-green-100 btn-active text-center">
-                <span class="text-xs font-bold text-green-500">⚙️ 管理</span>
+            <button onclick="checkAuth('pos.html')" class="bg-orange-50 py-3 rounded-xl flex flex-col items-center border border-orange-200 btn-active text-center shadow-sm">
+                <span class="text-xs font-black text-orange-600">💰 收銀</span>
+            </button>
+            <button onclick="checkAuth('admin.html')" class="bg-green-50 py-3 rounded-xl flex flex-col items-center border border-green-200 btn-active text-center shadow-sm">
+                <span class="text-xs font-black text-green-700">⚙️ 管理</span>
             </button>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-stone-100 mb-6">
+        <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-md border border-stone-200 mb-8">
             <img src="5.png" class="w-full h-56 object-cover" onerror="this.src='https://via.placeholder.com/400x200?text=Guava+Hub'">
             <div class="p-8">
                 <div class="flex items-center gap-2 mb-4">
-                    <div class="w-1.5 h-6 bg-green-500 rounded-full"></div>
-                    <h2 class="text-xl font-black text-stone-800 italic">慢磨鮮榨・原汁原味</h2>
+                    <div class="w-2 h-6 bg-green-600 rounded-full"></div>
+                    <h2 class="text-2xl font-black text-stone-900 italic tracking-tight">慢磨鮮榨・原汁原味</h2>
                 </div>
-                <p class="text-stone-500 text-md leading-relaxed">
-                    堅持慢磨技術，果渣分離保留最純粹維生素。承諾無糖、無水、無添加。
-                </p>
+                <p class="text-stone-700 text-lg font-medium leading-relaxed">堅持慢磨技術，果汁果渣完美分離，保留純粹維生素。無糖、無水、無添加。</p>
             </div>
         </div>
-
         <div class="bg-orange-50/50 rounded-[2.5rem] p-8 mb-8 border border-orange-100/50">
             <h3 class="text-lg font-black text-orange-800 mb-4 flex items-center gap-2">🍋 建議喝法</h3>
             <ul class="space-y-4 text-sm font-bold text-orange-900/70">
@@ -85,22 +86,24 @@
             </ul>
         </div>
 
-        <div id="menu" class="space-y-4 mb-20"></div>
+        <div id="menu" class="space-y-6 mb-20">
+            <div class="text-center py-10 text-stone-600 text-sm font-black italic">正在從數位王國下載菜單...</div>
+        </div>
     </main>
 
-    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-white p-6 rounded-[2.5rem] shadow-2xl z-[100] translate-y-60 transition-all duration-500 border border-stone-100">
-        <div class="flex flex-col gap-4">
-            <div class="bg-stone-50 rounded-2xl p-3 border border-stone-100">
-                <label class="text-[10px] font-black text-stone-400 ml-1 mb-1 block uppercase tracking-widest">預計取貨時間 PICKUP TIME</label>
-                <input type="time" id="pickup-time" class="w-full bg-transparent font-black text-stone-700 outline-none">
+    <div id="checkout-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[94%] max-w-md bg-white p-6 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-[100] translate-y-60 transition-all duration-500 border-2 border-stone-100">
+        <div class="flex flex-col gap-5">
+            <div class="bg-stone-100 rounded-2xl p-4 border-2 border-stone-200 shadow-inner">
+                <label class="text-xs font-black text-stone-800 ml-1 mb-2 block uppercase tracking-wider">預計取貨時間 PICKUP TIME</label>
+                <input type="time" id="pickup-time" class="w-full bg-transparent font-black text-stone-950 outline-none border-b-2 border-stone-300 pb-1">
             </div>
 
             <div class="flex justify-between items-center">
                 <div class="pl-2">
-                    <p class="text-2xl font-black text-green-600">$<span id="total-price">0</span></p>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Pre-order Total</p>
+                    <p class="text-3xl font-black text-green-600">$<span id="total-price">0</span></p>
+                    <p class="text-xs text-stone-900 font-black uppercase tracking-tighter">Pre-order Total</p>
                 </div>
-                <button onclick="submitOrder()" class="bg-green-500 text-white px-10 py-4 rounded-[2rem] font-black btn-active shadow-lg shadow-green-200">立即預約</button>
+                <button onclick="submitOrder()" class="bg-green-600 text-white px-10 py-5 rounded-[2rem] text-xl font-black btn-active shadow-xl shadow-green-200 active:bg-green-700">立即預約</button>
             </div>
         </div>
     </div>
@@ -118,81 +121,70 @@ const db = firebase.database();
 const auth = firebase.auth();
 
 let currentUser = null;
-let deferredPrompt;
+let cart = {};
+let allProducts = [];
 
-function checkAuth(targetUrl) {
-    const pwd = prompt("請輸入管理密碼：");
-    if (pwd === "870224") { window.location.href = targetUrl; }
-    else if (pwd !== null) { alert("密碼錯誤！"); }
-}
-
-function login() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider);
-}
-
-auth.onAuthStateChanged(user => {
-    const authSec = document.getElementById('auth-section');
-    if (user) {
-        currentUser = user;
-        authSec.innerHTML = `<img onclick="window.location.href='member.html'" src="${user.photoURL}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm cursor-pointer btn-active object-cover">`;
-    } else {
-        currentUser = null;
-        authSec.innerHTML = `<button onclick="login()" class="bg-white px-3 py-1.5 rounded-full shadow-sm border border-stone-100 text-[10px] font-bold text-stone-500 btn-active">👤 會員登入</button>`;
-    }
-});
-
-const adminSettingsRef = db.ref('admin_settings');
-adminSettingsRef.on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-        if (data.location) {
-            document.getElementById('display-location').innerText = data.location.name || "未設定地點";
-            document.getElementById('display-time').innerText = data.location.pos ? `(${data.location.pos})` : "";
-        }
-        const statusElement = document.getElementById('status-badge');
-        if (statusElement) {
-            const statusMap = {
-                'open': { text: '🟢 營業中', class: 'bg-green-100 text-green-600' },
-                'soldout': { text: '🟡 已售完', class: 'bg-yellow-100 text-yellow-600' },
-                'closed': { text: '🔴 結束營業', class: 'bg-red-100 text-red-600' }
-            };
-            const currentStatus = statusMap[data.status] || { text: '待機中', class: 'bg-gray-100 text-gray-400' };
-            statusElement.innerText = currentStatus.text;
-            statusElement.className = `text-[10px] font-bold px-2 py-0.5 rounded-full ${currentStatus.class}`;
-        }
-        if (data.prices) {
-            products[0].price = parseInt(data.prices.big_s);
-            products[1].price = parseInt(data.prices.big_d);
-            products[2].price = parseInt(data.prices.small_s);
-            products[3].price = parseInt(data.prices.small_d);
-            renderMenu();
-        }
-    }
-});
-
-const products = [
+const defaultProducts = [
     { id: 'b1', name: '大瓶 (單瓶)', price: 70, img: '1.png' },
     { id: 'b2', name: '大瓶 (2瓶優惠組)', price: 120, img: '2.png' },
     { id: 's1', name: '小瓶 (單瓶)', price: 60, img: '3.png' },
-    { id: 's2', name: '小瓶 (2瓶優惠組)', price: 100, img: '4.png' }
+    { id: 's2', name: '小瓶 (2瓶優惠組)', price: 100, img: '4.png' },
+    { id: 'd1', name: '榴槤 (1個)', price: 250, img: '6.png' },
+    { id: 'd2', name: '榴槤 (2個)', price: 500, img: '6.png' },
+    { id: 'd3', name: '榴槤 (3個)', price: 750, img: '6.png' }
 ];
-let cart = {};
+
+function initApp() {
+    db.ref('admin_settings').on('value', (snap) => {
+        const data = snap.val();
+        if (data) {
+            updateStatusUI(data);
+            if (data.prices) {
+                if(data.prices.big_s) defaultProducts[0].price = parseInt(data.prices.big_s);
+                if(data.prices.big_d) defaultProducts[1].price = parseInt(data.prices.big_d);
+                if(data.prices.small_s) defaultProducts[2].price = parseInt(data.prices.small_s);
+                if(data.prices.small_d) defaultProducts[3].price = parseInt(data.prices.small_d);
+                if(data.prices.d1) defaultProducts[4].price = parseInt(data.prices.d1);
+                if(data.prices.d2) defaultProducts[5].price = parseInt(data.prices.d2);
+                if(data.prices.d3) defaultProducts[6].price = parseInt(data.prices.d3);
+            }
+        }
+        loadDynamicMenu();
+    });
+}
+
+function loadDynamicMenu() {
+    db.ref('products').on('value', (snap) => {
+        const dynamicData = snap.val();
+        let dynamicList = [];
+        if (dynamicData) {
+            dynamicList = Object.keys(dynamicData).map(key => ({
+                id: key,
+                name: dynamicData[key].name,
+                price: dynamicData[key].price,
+                img: dynamicData[key].image
+            }));
+        }
+        allProducts = [...defaultProducts, ...dynamicList];
+        renderMenu();
+    });
+}
 
 function renderMenu() {
-    document.getElementById('menu').innerHTML = products.map(p => `
-        <div class="bg-white p-5 rounded-[2.5rem] flex items-center justify-between border border-stone-100 shadow-sm">
-            <div class="flex items-center gap-4">
-                <img src="${p.img}" class="w-16 h-16 object-cover rounded-2xl" onerror="this.src='https://via.placeholder.com/100'">
+    const menuEl = document.getElementById('menu');
+    menuEl.innerHTML = allProducts.map(p => `
+        <div class="bg-white p-6 rounded-[2.5rem] flex items-center justify-between border-2 border-white shadow-md product-card">
+            <div class="flex items-center gap-5">
+                <img src="${p.img}" class="w-20 h-20 object-cover rounded-3xl shadow-sm" onerror="this.src='https://via.placeholder.com/100?text=Product'">
                 <div>
-                    <h4 class="font-bold text-stone-700 text-md italic">${p.name}</h4>
-                    <p class="text-green-600 font-black text-xl">$${p.price}</p>
+                    <h4 class="font-black text-stone-900 text-lg italic leading-tight">${p.name}</h4>
+                    <p class="text-green-600 font-black text-2xl mt-1">$${p.price}</p>
                 </div>
             </div>
-            <div class="flex items-center gap-4 bg-stone-50 p-2 rounded-full">
-                <button onclick="updateCart('${p.id}', -1)" class="w-8 h-8 bg-white rounded-full shadow-sm font-black text-stone-300">-</button>
-                <span class="font-black w-4 text-center text-stone-700 text-xs">${cart[p.id] || 0}</span>
-                <button onclick="updateCart('${p.id}', 1)" class="w-8 h-8 bg-white rounded-full shadow-sm font-black text-green-500">+</button>
+            <div class="flex items-center gap-4 bg-stone-100 p-2.5 rounded-full border border-stone-200">
+                <button onclick="updateCart('${p.id}', -1)" class="w-10 h-10 bg-white rounded-full shadow-md font-black text-stone-400 text-xl btn-active border border-stone-50">-</button>
+                <span class="font-black w-6 text-center text-stone-950 text-lg">${cart[p.id] || 0}</span>
+                <button onclick="updateCart('${p.id}', 1)" class="w-10 h-10 bg-white rounded-full shadow-md font-black text-green-600 text-xl btn-active border border-stone-50">+</button>
             </div>
         </div>`).join('');
 }
@@ -207,8 +199,11 @@ function updateCart(id, change) {
 function updateUI() {
     let total = 0, count = 0;
     Object.keys(cart).forEach(id => {
-        total += (products.find(p => p.id === id).price || 0) * cart[id];
-        count += cart[id];
+        const prod = allProducts.find(p => p.id === id);
+        if (prod) {
+            total += prod.price * cart[id];
+            count += cart[id];
+        }
     });
     document.getElementById('total-price').innerText = total;
     const bar = document.getElementById('checkout-bar');
@@ -219,7 +214,7 @@ function updateUI() {
 async function submitOrder() {
     if (!currentUser) { alert("請先登入會員帳號喔！"); return; }
     const pickupTime = document.getElementById('pickup-time').value;
-    if (!pickupTime) { alert("請選擇您的預計取貨時間喔！"); return; }
+    if (!pickupTime) { alert("請選擇預計取貨時間！"); return; }
 
     const userSnap = await db.ref('users/' + currentUser.uid).get();
     const userProfile = userSnap.val() || {};
@@ -227,28 +222,67 @@ async function submitOrder() {
     
     db.ref('orders').push({
         userName: currentUser.displayName,
-        userPhone: userProfile.phone || "未填寫電話",
+        userPhone: userProfile.phone || "未填寫",
         userPhoto: currentUser.photoURL,
-        email: currentUser.email,
         total: total,
         pickupTime: pickupTime,
         items: Object.keys(cart).filter(id => cart[id] > 0).map(id => ({ 
-            name: products.find(p => p.id === id).name, 
+            name: allProducts.find(p => p.id === id).name, 
             qty: cart[id] 
         })),
         status: "待處理",
         time: new Date().toLocaleString()
     }).then(() => {
-        alert("預約成功！請於明天 " + pickupTime + " 準時領取。");
+        alert("🎉 預約成功！記得準時取貨喔！");
         cart = {}; updateUI(); renderMenu();
     });
 }
 
-function copyLink() { navigator.clipboard.writeText(window.location.href); alert('網址已複製！'); }
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').style.display = 'flex'; });
-function installPWA() { if(deferredPrompt) deferredPrompt.prompt(); }
+function updateStatusUI(data) {
+    if (data.location) {
+        document.getElementById('display-location').innerText = data.location.name || "地點未設定";
+        document.getElementById('display-time').innerText = data.location.pos ? `🕘 ${data.location.pos}` : "";
+    }
+    const statusMap = {
+        'open': { text: '🟢 營業中', class: 'bg-green-600 text-white shadow-green-100' },
+        'soldout': { text: '🟡 已售完', class: 'bg-yellow-500 text-white shadow-yellow-100' },
+        'closed': { text: '🔴 休息中', class: 'bg-red-600 text-white shadow-red-100' }
+    };
+    const current = statusMap[data.status] || { text: '待機中', class: 'bg-gray-500 text-white' };
+    const badge = document.getElementById('status-badge');
+    badge.innerText = current.text;
+    badge.className = `text-xs font-black px-4 py-1.5 rounded-full ${current.class} mt-2 border border-white shadow-md`;
+}
 
-renderMenu();
+function checkAuth(targetUrl) {
+    const pwd = prompt("請輸入管理密碼：");
+    if (pwd === "870224") { window.location.href = targetUrl; }
+    else if (pwd !== null) { alert("密碼錯誤！"); }
+}
+
+function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+
+auth.onAuthStateChanged(user => {
+    currentUser = user;
+    const authSec = document.getElementById('auth-section');
+    if (user) {
+        authSec.innerHTML = `
+            <div class="flex flex-col items-end">
+                <img onclick="window.location.href='member.html'" src="${user.photoURL}" class="w-12 h-12 rounded-full border-4 border-white shadow-md cursor-pointer btn-active object-cover ml-auto">
+                <div id="status-badge"></div>
+            </div>`;
+    } else {
+        authSec.innerHTML = `
+            <div class="flex flex-col items-end">
+                <button onclick="login()" class="bg-white px-5 py-2.5 rounded-full shadow-md border-2 border-stone-100 text-sm font-black text-stone-800 btn-active">👤 會員登入</button>
+                <div id="status-badge"></div>
+            </div>`;
+    }
+    initApp();
+});
+
+function copyLink() { navigator.clipboard.writeText(window.location.href); alert('網址已複製！快分享給朋友吧！'); }
+initApp();
 </script>
 </body>
 </html>
